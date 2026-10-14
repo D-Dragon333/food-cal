@@ -1,0 +1,3007 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Food Cal">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-32.png">
+  <title>Food Cal</title>
+  <style>
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f5f5f4;
+  --ink: #101010;
+  --ink-soft: #5f5f5c;
+  --line: #e3e3e0;
+  --line-strong: #101010;
+  --radius: 8px;
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+  overscroll-behavior-y: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--bg);
+  border-inline: 1px solid var(--line);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 12px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  display: grid;
+  place-content: center;
+  gap: 3px;
+  padding: 7px;
+}
+
+.brand-mark span {
+  display: block;
+  height: 2px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:active,
+.step-btn:active,
+.chip:active,
+.tab:active,
+.quick-grams button:active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.icon-btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  padding: 0 10px;
+}
+
+.lang-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.lang-btn span {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  background: var(--bg);
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  padding: 13px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  position: relative;
+}
+
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  height: 2px;
+  background: var(--ink);
+  opacity: 0;
+}
+
+.tab.is-active {
+  color: var(--ink);
+}
+
+.tab.is-active::after {
+  opacity: 1;
+}
+
+.tab[data-view="recipes"] {
+  white-space: nowrap;
+}
+
+main {
+  flex: 1;
+  padding: 14px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.view {
+  display: none;
+}
+
+.view.is-active {
+  display: block;
+  animation: rise 0.2s ease;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  height: 46px;
+  background: var(--bg);
+}
+
+.search-box svg {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  flex: none;
+}
+
+.search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px;
+  min-width: 0;
+}
+
+.clear-btn {
+  width: 46px;
+  height: 46px;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 10px;
+  scrollbar-width: none;
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.chip.is-active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.list-head,
+.section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 10px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.food-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.food-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+
+.food-item:last-child {
+  border-bottom: 0;
+}
+
+.food-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.food-item-main strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.food-item-main span {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.food-item .kcal {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.food-item .kcal small {
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.empty {
+  padding: 34px 12px;
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+
+.empty p {
+  margin: 4px 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.empty .muted {
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.diary-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 6px 0 16px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.diary-summary h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 750;
+}
+
+.total-block {
+  text-align: right;
+}
+
+.total-block strong {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.total-block span {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+
+.macro-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.macro-row div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.macro-row span {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.macro-row strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.text-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.diary-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.diary-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.diary-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.diary-item-info strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.diary-item-info span {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.diary-item .grams {
+  width: 72px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 14px;
+  padding: 7px 4px;
+  background: var(--bg);
+}
+
+.diary-item .kcal {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.diary-delete {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+}
+
+.diary-delete svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.photo-panel {
+  margin-bottom: 18px;
+}
+
+.photo-stage {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  aspect-ratio: 16 / 11;
+  display: grid;
+  place-items: center;
+  background: var(--bg-soft);
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-stage svg {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.photo-stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-stage p {
+  position: absolute;
+  inset: auto 12px 10px;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.photo-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.photo-note {
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 10px 0 0;
+}
+
+.recipe-intro {
+  padding: 2px 0 4px;
+}
+
+.recipe-intro h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 750;
+}
+
+.recipe-intro p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+
+.recipe-item:last-child {
+  border-bottom: 0;
+}
+
+.recipe-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.recipe-item-main strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.recipe-item-main span {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipe-item .kcal {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.recipe-item .kcal small {
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.btn {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: var(--radius);
+  height: 44px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.btn-ghost {
+  border-color: var(--line);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  z-index: 40;
+}
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 0);
+  width: min(640px, 100%);
+  background: var(--bg);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow);
+  z-index: 41;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 10px 18px calc(22px + env(safe-area-inset-bottom));
+}
+
+.sheet[hidden] {
+  display: none;
+}
+
+.sheet-handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+  margin: 0 auto 10px;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border-color: var(--line);
+}
+
+.food-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 40px 14px 0;
+}
+
+.food-title h2 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 750;
+}
+
+.food-title .muted {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.kcal-badge {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.kcal-badge strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.kcal-badge span {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.macro-grid div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.macro-grid span {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.macro-grid strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.recipe-macros {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.recipe-macros div {
+  padding: 9px 8px;
+}
+
+.recipe-macros span {
+  font-size: 10px;
+}
+
+.recipe-macros strong {
+  font-size: 13px;
+}
+
+.recipe-subhead {
+  margin: 20px 0 8px;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.ingredient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.ingredient-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.ingredient-list .amount {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.step-list {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.step-list li {
+  padding: 8px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+
+.recipe-meta span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.lang-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  z-index: 48;
+}
+
+.lang-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 0);
+  width: min(640px, 100%);
+  background: var(--bg);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow);
+  z-index: 49;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px calc(18px + env(safe-area-inset-bottom));
+}
+
+.lang-sheet[hidden] {
+  display: none;
+}
+
+.lang-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 10px;
+}
+
+.lang-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.lang-sheet input[type="search"] {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  height: 42px;
+  padding: 0 12px;
+  font-size: 15px;
+  margin-bottom: 10px;
+  flex: none;
+}
+
+.lang-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lang-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+}
+
+.lang-option small {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.lang-option.is-active {
+  font-weight: 750;
+}
+
+.lang-option.is-active::after {
+  content: "✓";
+  font-weight: 750;
+}
+
+.calc-block {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.calc-block > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+
+.grams-control {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.step-btn {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  border-radius: var(--radius);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.grams-field {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 44px;
+}
+
+.grams-field input {
+  border: 0;
+  outline: 0;
+  width: 90px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  background: transparent;
+}
+
+.grams-field span {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.quick-grams {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.quick-grams button {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: var(--radius);
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.computed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin: 4px 0 14px;
+}
+
+.computed span {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.computed strong {
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 60;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .app {
+    min-height: 100vh;
+    border-inline: 1px solid var(--line);
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <h1>Food Cal</h1>
+          <p data-i18n="subtitle">Offline calorie counter</p>
+        </div>
+      </div>
+      <button class="icon-btn lang-btn" id="language-btn" aria-label="Change language" title="Change language">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+        <span id="language-code">EN</span>
+      </button>
+    </header>
+
+    <nav class="tabs" aria-label="Main views">
+      <button class="tab is-active" data-view="foods" data-i18n="tabFoods">Foods</button>
+      <button class="tab" data-view="diary" data-i18n="tabDiary">Diary</button>
+      <button class="tab" data-view="photo" data-i18n="tabScan">Scan</button>
+      <button class="tab" data-view="recipes" data-i18n="tabRecipes">Recipes</button>
+    </nav>
+
+    <main>
+      <section class="view is-active" id="view-foods" aria-label="Food database">
+        <div class="search-row">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="search-input" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Search food" autocomplete="off">
+          </label>
+          <button class="icon-btn clear-btn" id="clear-search" aria-label="Clear search" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <div class="chips" id="category-chips" aria-label="Food categories"></div>
+
+        <div class="list-head">
+          <span id="result-count"></span>
+          <span class="muted" data-i18n="per100g">per 100 g</span>
+        </div>
+        <div class="food-list" id="food-list"></div>
+        <div class="empty" id="empty-state" hidden>
+          <p data-i18n="noFood">No matching food</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-diary" aria-label="Daily log">
+        <div class="diary-summary">
+          <div>
+            <p class="eyebrow" data-i18n="today">Today</p>
+            <h2 id="diary-date"></h2>
+          </div>
+          <div class="total-block">
+            <strong id="diary-total">0</strong>
+            <span data-i18n="kcal">kcal</span>
+          </div>
+        </div>
+        <div class="macro-row">
+          <div><span data-i18n="protein">Protein</span><strong id="diary-protein">0 g</strong></div>
+          <div><span data-i18n="carbs">Carbs</span><strong id="diary-carbs">0 g</strong></div>
+          <div><span data-i18n="fat">Fat</span><strong id="diary-fat">0 g</strong></div>
+        </div>
+        <div class="section-label">
+          <span data-i18n="loggedFoods">Logged foods</span>
+          <button class="text-btn" id="clear-diary" data-i18n="clearAll">Clear all</button>
+        </div>
+        <div class="diary-list" id="diary-list"></div>
+        <div class="empty" id="diary-empty">
+          <p data-i18n="nothingLogged">Nothing logged yet</p>
+          <p class="muted" data-i18n="nothingLoggedSub">Add foods from the search list</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-photo" aria-label="Photo scan">
+        <div class="photo-panel">
+          <div class="photo-stage" id="photo-stage">
+            <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M14.5 4h-5L7.8 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.8L14.5 4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+            <img id="photo-preview" alt="" hidden>
+            <p id="photo-hint" data-i18n="photoHint">Take or choose a food photo</p>
+          </div>
+          <div class="photo-actions">
+            <button class="btn" id="take-photo" data-i18n="takePhoto">Take photo</button>
+            <button class="btn btn-ghost" id="choose-photo" data-i18n="readLocalPhoto">Read local photo</button>
+          </div>
+          <input id="photo-input" type="file" accept="image/*" capture="environment" hidden>
+          <input id="gallery-input" type="file" accept="image/*" hidden>
+          <p class="muted photo-note" data-i18n="photoNote">Offline color scan gives approximate matches. Confirm the food before logging.</p>
+        </div>
+        <div class="section-label"><span data-i18n="bestMatches">Best matches</span></div>
+        <div class="food-list" id="photo-results"></div>
+        <div class="empty" id="photo-empty">
+          <p data-i18n="noPhoto">No photo analyzed yet</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-recipes" aria-label="Recipes">
+        <div class="recipe-intro">
+          <h2 data-i18n="recommendedRecipes">Recommended recipes</h2>
+          <p data-i18n="recipeIntro">Choose a group, then tap a recipe for ingredients, steps, and calories.</p>
+        </div>
+        <div class="chips" id="recipe-chips" aria-label="Recipe groups"></div>
+        <div class="list-head">
+          <span id="recipe-count"></span>
+          <span class="muted" data-i18n="perServing">per serving</span>
+        </div>
+        <div class="recipe-list" id="recipe-list"></div>
+        <div class="empty" id="recipe-empty">
+          <p data-i18n="noRecipes">No recipes here yet</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <section class="sheet" id="food-sheet" role="dialog" aria-modal="true" aria-label="Food details" hidden>
+      <div class="sheet-handle"></div>
+      <button class="icon-btn sheet-close" id="sheet-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="sheet-body">
+        <div class="food-title">
+          <div>
+            <p class="eyebrow" id="sheet-category"></p>
+            <h2 id="sheet-name"></h2>
+            <p class="muted" id="sheet-sub"></p>
+          </div>
+          <div class="kcal-badge"><strong id="sheet-kcal">0</strong><span data-i18n="kcal">kcal</span></div>
+        </div>
+        <div class="macro-grid">
+          <div><span data-i18n="protein">Protein</span><strong id="sheet-protein"></strong></div>
+          <div><span data-i18n="carbs">Carbs</span><strong id="sheet-carbs"></strong></div>
+          <div><span data-i18n="fat">Fat</span><strong id="sheet-fat"></strong></div>
+        </div>
+        <div class="calc-block">
+          <label for="grams-input" data-i18n="weight">Weight</label>
+          <div class="grams-control">
+            <button class="step-btn" id="grams-minus" aria-label="Decrease weight">-</button>
+            <div class="grams-field"><input id="grams-input" type="number" inputmode="decimal" value="100" min="1" max="2000"><span>g</span></div>
+            <button class="step-btn" id="grams-plus" aria-label="Increase weight">+</button>
+          </div>
+          <div class="quick-grams" id="quick-grams">
+            <button data-grams="50">50g</button>
+            <button data-grams="100">100g</button>
+            <button data-grams="150">150g</button>
+            <button data-grams="200">200g</button>
+          </div>
+          <div class="computed" id="computed-row">
+            <span data-i18n="calculated">Calculated</span>
+            <strong id="computed-kcal">0 kcal</strong>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="add-to-diary" data-i18n="addToDiary">Add to diary</button>
+      </div>
+    </section>
+
+    <section class="sheet" id="recipe-sheet" role="dialog" aria-modal="true" aria-label="Recipe details" hidden>
+      <div class="sheet-handle"></div>
+      <button class="icon-btn sheet-close" id="recipe-sheet-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="sheet-body">
+        <p class="eyebrow" id="recipe-category"></p>
+        <h2 id="recipe-name"></h2>
+        <div class="recipe-meta" id="recipe-meta"></div>
+        <div class="macro-grid recipe-macros">
+          <div><span data-i18n="calories">Calories</span><strong id="recipe-kcal"></strong></div>
+          <div><span data-i18n="protein">Protein</span><strong id="recipe-protein"></strong></div>
+          <div><span data-i18n="carbs">Carbs</span><strong id="recipe-carbs"></strong></div>
+          <div><span data-i18n="fat">Fat</span><strong id="recipe-fat"></strong></div>
+        </div>
+        <h3 class="recipe-subhead" data-i18n="ingredients">Ingredients</h3>
+        <ul class="ingredient-list" id="recipe-ingredients"></ul>
+        <h3 class="recipe-subhead" data-i18n="cookingSteps">Cooking steps</h3>
+        <ol class="step-list" id="recipe-steps"></ol>
+      </div>
+    </section>
+
+    <div class="lang-backdrop" id="lang-backdrop" hidden></div>
+    <section class="lang-sheet" id="lang-sheet" role="dialog" aria-modal="true" aria-label="Choose language" hidden>
+      <div class="sheet-handle"></div>
+      <div class="lang-head">
+        <h2 data-i18n="language">Language</h2>
+        <button class="icon-btn" id="lang-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <input id="lang-search" type="search" data-i18n-placeholder="searchLanguage" placeholder="Search language" autocomplete="off">
+      <div class="lang-list" id="lang-list"></div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </div>
+  <script>
+  window.FOODS = [
+  // Vegetables
+  { id: "spinach", en: "Spinach", zh: "菠菜", cat: "veg", kcal: 28, p: 2.9, c: 3.6, f: 0.4 },
+  { id: "napa-cabbage", en: "Napa cabbage", zh: "大白菜", cat: "veg", kcal: 20, p: 1.5, c: 3.2, f: 0.1 },
+  { id: "bok-choy", en: "Bok choy", zh: "小白菜", cat: "veg", kcal: 17, p: 1.5, c: 2.7, f: 0.3 },
+  { id: "lettuce", en: "Lettuce", zh: "生菜", cat: "veg", kcal: 16, p: 1.3, c: 2.0, f: 0.3 },
+  { id: "romaine", en: "Romaine lettuce", zh: "油麦菜", cat: "veg", kcal: 15, p: 1.4, c: 2.1, f: 0.4 },
+  { id: "cabbage", en: "Cabbage", zh: "卷心菜", cat: "veg", kcal: 24, p: 1.5, c: 4.6, f: 0.2 },
+  { id: "kale", en: "Kale", zh: "羽衣甘蓝", cat: "veg", kcal: 49, p: 4.3, c: 8.8, f: 0.9 },
+  { id: "broccoli", en: "Broccoli", zh: "西兰花", cat: "veg", kcal: 36, p: 4.1, c: 4.3, f: 0.6 },
+  { id: "cauliflower", en: "Cauliflower", zh: "花菜", cat: "veg", kcal: 24, p: 2.1, c: 4.6, f: 0.2 },
+  { id: "chinese-broccoli", en: "Chinese broccoli", zh: "芥蓝", cat: "veg", kcal: 19, p: 2.8, c: 3.1, f: 0.4 },
+  { id: "asparagus", en: "Asparagus", zh: "芦笋", cat: "veg", kcal: 22, p: 2.4, c: 3.9, f: 0.1 },
+  { id: "celery", en: "Celery", zh: "芹菜", cat: "veg", kcal: 22, p: 1.2, c: 3.3, f: 0.2 },
+  { id: "cilantro", en: "Cilantro", zh: "香菜", cat: "veg", kcal: 31, p: 2.2, c: 6.2, f: 0.5 },
+  { id: "cucumber", en: "Cucumber", zh: "黄瓜", cat: "veg", kcal: 16, p: 0.8, c: 2.9, f: 0.2 },
+  { id: "zucchini", en: "Zucchini", zh: "西葫芦", cat: "veg", kcal: 19, p: 0.8, c: 3.8, f: 0.2 },
+  { id: "winter-melon", en: "Winter melon", zh: "冬瓜", cat: "veg", kcal: 12, p: 0.4, c: 2.6, f: 0.2 },
+  { id: "bitter-melon", en: "Bitter melon", zh: "苦瓜", cat: "veg", kcal: 22, p: 1.0, c: 4.9, f: 0.1 },
+  { id: "pumpkin", en: "Pumpkin", zh: "南瓜", cat: "veg", kcal: 23, p: 0.7, c: 5.3, f: 0.1 },
+  { id: "tomato", en: "Tomato", zh: "番茄", cat: "veg", kcal: 20, p: 0.9, c: 4.0, f: 0.2 },
+  { id: "cherry-tomato", en: "Cherry tomato", zh: "圣女果", cat: "veg", kcal: 25, p: 1.0, c: 5.8, f: 0.2 },
+  { id: "carrot", en: "Carrot", zh: "胡萝卜", cat: "veg", kcal: 39, p: 1.0, c: 8.8, f: 0.2 },
+  { id: "white-radish", en: "White radish", zh: "白萝卜", cat: "veg", kcal: 23, p: 0.9, c: 5.0, f: 0.1 },
+  { id: "eggplant", en: "Eggplant", zh: "茄子", cat: "veg", kcal: 23, p: 1.1, c: 4.9, f: 0.2 },
+  { id: "bell-pepper", en: "Bell pepper", zh: "彩椒", cat: "veg", kcal: 26, p: 1.0, c: 6.0, f: 0.2 },
+  { id: "green-pepper", en: "Green pepper", zh: "青椒", cat: "veg", kcal: 22, p: 1.4, c: 5.4, f: 0.3 },
+  { id: "chili", en: "Chili pepper", zh: "辣椒", cat: "veg", kcal: 32, p: 1.6, c: 7.6, f: 0.4 },
+  { id: "onion", en: "Onion", zh: "洋葱", cat: "veg", kcal: 40, p: 1.1, c: 9.0, f: 0.2 },
+  { id: "scallion", en: "Scallion", zh: "大葱", cat: "veg", kcal: 33, p: 1.7, c: 7.2, f: 0.3 },
+  { id: "garlic", en: "Garlic", zh: "大蒜", cat: "veg", kcal: 128, p: 4.5, c: 27.6, f: 0.2 },
+  { id: "ginger", en: "Ginger", zh: "姜", cat: "veg", kcal: 46, p: 1.3, c: 10.3, f: 0.6 },
+  { id: "leek", en: "Leek", zh: "韭菜", cat: "veg", kcal: 25, p: 2.1, c: 4.6, f: 0.4 },
+  { id: "bean-sprout", en: "Bean sprouts", zh: "绿豆芽", cat: "veg", kcal: 18, p: 2.1, c: 2.9, f: 0.1 },
+  { id: "soybean-sprout", en: "Soybean sprouts", zh: "黄豆芽", cat: "veg", kcal: 47, p: 4.5, c: 4.5, f: 1.6 },
+  { id: "green-bean", en: "Green beans", zh: "四季豆", cat: "veg", kcal: 31, p: 2.0, c: 5.7, f: 0.4 },
+  { id: "yardlong-bean", en: "Yardlong bean", zh: "豇豆", cat: "veg", kcal: 32, p: 2.9, c: 5.9, f: 0.3 },
+  { id: "snow-pea", en: "Snow peas", zh: "荷兰豆", cat: "veg", kcal: 30, p: 2.5, c: 4.9, f: 0.3 },
+  { id: "green-pea", en: "Green peas", zh: "豌豆", cat: "veg", kcal: 105, p: 7.4, c: 18.2, f: 0.3 },
+  { id: "edamame", en: "Edamame", zh: "毛豆", cat: "veg", kcal: 131, p: 13.1, c: 10.5, f: 5.0 },
+  { id: "okra", en: "Okra", zh: "秋葵", cat: "veg", kcal: 37, p: 2.0, c: 7.1, f: 0.1 },
+  { id: "water-spinach", en: "Water spinach", zh: "空心菜", cat: "veg", kcal: 23, p: 2.2, c: 4.5, f: 0.3 },
+  { id: "amaranth", en: "Amaranth", zh: "苋菜", cat: "veg", kcal: 31, p: 2.8, c: 4.1, f: 0.4 },
+  { id: "shepherd-purse", en: "Shepherd's purse", zh: "荠菜", cat: "veg", kcal: 27, p: 2.9, c: 4.7, f: 0.4 },
+  { id: "fennel", en: "Fennel", zh: "茴香", cat: "veg", kcal: 27, p: 2.5, c: 4.2, f: 0.4 },
+  { id: "kohlrabi", en: "Kohlrabi", zh: "苤蓝", cat: "veg", kcal: 27, p: 1.3, c: 5.5, f: 0.2 },
+  { id: "arugula", en: "Arugula", zh: "芝麻菜", cat: "veg", kcal: 25, p: 2.6, c: 3.6, f: 0.7 },
+  { id: "watercress", en: "Watercress", zh: "西洋菜", cat: "veg", kcal: 11, p: 1.2, c: 1.6, f: 0.2 },
+  { id: "choy-sum", en: "Choy sum", zh: "菜心", cat: "veg", kcal: 21, p: 2.0, c: 3.6, f: 0.3 },
+  { id: "mustard-green", en: "Mustard greens", zh: "芥菜", cat: "veg", kcal: 24, p: 1.9, c: 4.7, f: 0.2 },
+  { id: "luffa", en: "Luffa", zh: "丝瓜", cat: "veg", kcal: 20, p: 1.0, c: 4.2, f: 0.2 },
+  { id: "bottle-gourd", en: "Bottle gourd", zh: "瓠瓜", cat: "veg", kcal: 15, p: 0.7, c: 3.3, f: 0.1 },
+  { id: "chayote", en: "Chayote", zh: "佛手瓜", cat: "veg", kcal: 19, p: 0.8, c: 4.5, f: 0.1 },
+  { id: "shiitake", en: "Shiitake mushroom", zh: "香菇", cat: "veg", kcal: 26, p: 2.2, c: 5.2, f: 0.3 },
+  { id: "button-mushroom", en: "Button mushroom", zh: "白蘑菇", cat: "veg", kcal: 22, p: 3.1, c: 3.3, f: 0.3 },
+  { id: "enoki", en: "Enoki mushroom", zh: "金针菇", cat: "veg", kcal: 32, p: 2.4, c: 6.0, f: 0.4 },
+  { id: "oyster-mushroom", en: "Oyster mushroom", zh: "平菇", cat: "veg", kcal: 24, p: 1.9, c: 4.6, f: 0.3 },
+  { id: "king-oyster", en: "King oyster mushroom", zh: "杏鲍菇", cat: "veg", kcal: 31, p: 2.6, c: 5.1, f: 0.3 },
+  { id: "wood-ear", en: "Wood ear mushroom", zh: "木耳", cat: "veg", kcal: 27, p: 1.5, c: 6.0, f: 0.2 },
+  { id: "straw-mushroom", en: "Straw mushroom", zh: "草菇", cat: "veg", kcal: 23, p: 2.7, c: 3.3, f: 0.2 },
+  { id: "seafood-mushroom", en: "Seafood mushroom", zh: "蟹味菇", cat: "veg", kcal: 29, p: 2.1, c: 5.2, f: 0.2 },
+  { id: "tea-tree-mushroom", en: "Tea tree mushroom", zh: "茶树菇", cat: "veg", kcal: 25, p: 2.4, c: 4.4, f: 0.2 },
+  { id: "kelp", en: "Kelp", zh: "海带", cat: "veg", kcal: 13, p: 1.2, c: 2.1, f: 0.1 },
+  { id: "laver", en: "Laver (dry)", zh: "紫菜（干）", cat: "veg", kcal: 250, p: 26.7, c: 44.1, f: 1.1 },
+  { id: "wakame", en: "Wakame", zh: "裙带菜", cat: "veg", kcal: 45, p: 3.0, c: 9.1, f: 0.6 },
+
+  // Fruits
+  { id: "apple", en: "Apple", zh: "苹果", cat: "fruit", kcal: 53, p: 0.2, c: 13.7, f: 0.2 },
+  { id: "pear", en: "Pear", zh: "梨", cat: "fruit", kcal: 51, p: 0.3, c: 13.1, f: 0.1 },
+  { id: "peach", en: "Peach", zh: "桃", cat: "fruit", kcal: 42, p: 0.6, c: 10.1, f: 0.1 },
+  { id: "nectarine", en: "Nectarine", zh: "油桃", cat: "fruit", kcal: 44, p: 0.9, c: 10.2, f: 0.1 },
+  { id: "apricot", en: "Apricot", zh: "杏", cat: "fruit", kcal: 38, p: 0.9, c: 9.1, f: 0.1 },
+  { id: "plum", en: "Plum", zh: "李子", cat: "fruit", kcal: 38, p: 0.7, c: 8.7, f: 0.2 },
+  { id: "cherry", en: "Cherry", zh: "樱桃", cat: "fruit", kcal: 46, p: 1.1, c: 10.2, f: 0.2 },
+  { id: "grape", en: "Grape", zh: "葡萄", cat: "fruit", kcal: 45, p: 0.4, c: 10.3, f: 0.3 },
+  { id: "strawberry", en: "Strawberry", zh: "草莓", cat: "fruit", kcal: 32, p: 1.0, c: 7.1, f: 0.2 },
+  { id: "blueberry", en: "Blueberry", zh: "蓝莓", cat: "fruit", kcal: 57, p: 0.7, c: 14.5, f: 0.3 },
+  { id: "raspberry", en: "Raspberry", zh: "树莓", cat: "fruit", kcal: 52, p: 1.2, c: 11.9, f: 0.7 },
+  { id: "blackberry", en: "Blackberry", zh: "黑莓", cat: "fruit", kcal: 43, p: 1.4, c: 9.6, f: 0.5 },
+  { id: "mulberry", en: "Mulberry", zh: "桑葚", cat: "fruit", kcal: 57, p: 1.7, c: 13.8, f: 0.4 },
+  { id: "banana", en: "Banana", zh: "香蕉", cat: "fruit", kcal: 93, p: 1.4, c: 22.0, f: 0.2 },
+  { id: "orange", en: "Orange", zh: "橙子", cat: "fruit", kcal: 48, p: 0.8, c: 11.1, f: 0.2 },
+  { id: "mandarin", en: "Mandarin", zh: "柑橘", cat: "fruit", kcal: 53, p: 0.8, c: 11.5, f: 0.2 },
+  { id: "tangerine", en: "Tangerine", zh: "桔子", cat: "fruit", kcal: 51, p: 0.8, c: 11.9, f: 0.2 },
+  { id: "lemon", en: "Lemon", zh: "柠檬", cat: "fruit", kcal: 37, p: 1.1, c: 6.2, f: 1.2 },
+  { id: "lime", en: "Lime", zh: "青柠", cat: "fruit", kcal: 30, p: 0.7, c: 10.5, f: 0.2 },
+  { id: "grapefruit", en: "Grapefruit", zh: "西柚", cat: "fruit", kcal: 42, p: 0.8, c: 9.6, f: 0.2 },
+  { id: "pomelo", en: "Pomelo", zh: "柚子", cat: "fruit", kcal: 42, p: 0.8, c: 9.6, f: 0.2 },
+  { id: "watermelon", en: "Watermelon", zh: "西瓜", cat: "fruit", kcal: 31, p: 0.6, c: 7.6, f: 0.1 },
+  { id: "cantaloupe", en: "Cantaloupe", zh: "哈密瓜", cat: "fruit", kcal: 34, p: 0.5, c: 7.9, f: 0.1 },
+  { id: "honeydew", en: "Honeydew melon", zh: "白兰瓜", cat: "fruit", kcal: 26, p: 0.4, c: 6.0, f: 0.1 },
+  { id: "mango", en: "Mango", zh: "芒果", cat: "fruit", kcal: 35, p: 0.6, c: 8.3, f: 0.2 },
+  { id: "pineapple", en: "Pineapple", zh: "菠萝", cat: "fruit", kcal: 44, p: 0.5, c: 10.8, f: 0.1 },
+  { id: "papaya", en: "Papaya", zh: "木瓜", cat: "fruit", kcal: 43, p: 0.5, c: 10.8, f: 0.1 },
+  { id: "guava", en: "Guava", zh: "番石榴", cat: "fruit", kcal: 68, p: 2.6, c: 14.3, f: 0.5 },
+  { id: "kiwi", en: "Kiwi", zh: "猕猴桃", cat: "fruit", kcal: 61, p: 0.8, c: 14.5, f: 0.6 },
+  { id: "dragon-fruit", en: "Dragon fruit", zh: "火龙果", cat: "fruit", kcal: 51, p: 1.1, c: 13.3, f: 0.2 },
+  { id: "persimmon", en: "Persimmon", zh: "柿子", cat: "fruit", kcal: 74, p: 0.4, c: 18.5, f: 0.1 },
+  { id: "pomegranate", en: "Pomegranate", zh: "石榴", cat: "fruit", kcal: 73, p: 1.4, c: 18.7, f: 0.2 },
+  { id: "lychee", en: "Lychee", zh: "荔枝", cat: "fruit", kcal: 71, p: 0.9, c: 16.6, f: 0.2 },
+  { id: "longan", en: "Longan", zh: "龙眼", cat: "fruit", kcal: 71, p: 1.2, c: 16.2, f: 0.1 },
+  { id: "mangosteen", en: "Mangosteen", zh: "山竹", cat: "fruit", kcal: 73, p: 0.5, c: 18.0, f: 0.2 },
+  { id: "durian", en: "Durian", zh: "榴莲", cat: "fruit", kcal: 147, p: 2.6, c: 27.1, f: 5.3 },
+  { id: "jackfruit", en: "Jackfruit", zh: "菠萝蜜", cat: "fruit", kcal: 94, p: 1.5, c: 24.0, f: 0.3 },
+  { id: "avocado", en: "Avocado", zh: "牛油果", cat: "fruit", kcal: 160, p: 2.0, c: 8.5, f: 14.7 },
+  { id: "coconut-water", en: "Coconut water", zh: "椰子水", cat: "fruit", kcal: 19, p: 0.7, c: 3.7, f: 0.2 },
+  { id: "fig", en: "Fig", zh: "无花果", cat: "fruit", kcal: 65, p: 0.7, c: 16.3, f: 0.2 },
+  { id: "jujube", en: "Jujube (fresh)", zh: "鲜枣", cat: "fruit", kcal: 125, p: 1.1, c: 30.5, f: 0.3 },
+  { id: "jujube-dry", en: "Jujube (dry)", zh: "干红枣", cat: "fruit", kcal: 276, p: 3.2, c: 67.8, f: 0.5 },
+  { id: "raisin", en: "Raisins", zh: "葡萄干", cat: "fruit", kcal: 344, p: 2.5, c: 83.4, f: 0.4 },
+  { id: "prune", en: "Prune (dry)", zh: "西梅干", cat: "fruit", kcal: 240, p: 2.2, c: 63.9, f: 0.4 },
+  { id: "hawthorn", en: "Hawthorn", zh: "山楂", cat: "fruit", kcal: 102, p: 0.7, c: 25.1, f: 0.6 },
+  { id: "loquat", en: "Loquat", zh: "枇杷", cat: "fruit", kcal: 47, p: 0.8, c: 10.6, f: 0.2 },
+  { id: "starfruit", en: "Starfruit", zh: "杨桃", cat: "fruit", kcal: 31, p: 0.6, c: 7.4, f: 0.2 },
+  { id: "wax-apple", en: "Wax apple", zh: "莲雾", cat: "fruit", kcal: 34, p: 0.5, c: 8.0, f: 0.1 },
+  { id: "sugar-apple", en: "Sugar apple", zh: "释迦", cat: "fruit", kcal: 94, p: 1.6, c: 23.6, f: 0.3 },
+  { id: "passion-fruit", en: "Passion fruit", zh: "百香果", cat: "fruit", kcal: 97, p: 2.2, c: 23.4, f: 0.7 },
+  { id: "cranberry", en: "Cranberry", zh: "蔓越莓", cat: "fruit", kcal: 46, p: 0.4, c: 12.2, f: 0.1 },
+  { id: "gooseberry", en: "Gooseberry", zh: "醋栗", cat: "fruit", kcal: 44, p: 0.9, c: 10.2, f: 0.6 },
+
+  // Staples
+  { id: "rice-cooked", en: "Rice (cooked)", zh: "米饭（熟）", cat: "staple", kcal: 116, p: 2.6, c: 25.9, f: 0.3 },
+  { id: "rice-raw", en: "Rice (raw)", zh: "大米（生）", cat: "staple", kcal: 346, p: 7.4, c: 77.9, f: 0.8 },
+  { id: "brown-rice-cooked", en: "Brown rice (cooked)", zh: "糙米饭（熟）", cat: "staple", kcal: 111, p: 2.6, c: 23.0, f: 0.9 },
+  { id: "brown-rice-raw", en: "Brown rice (raw)", zh: "糙米（生）", cat: "staple", kcal: 348, p: 7.7, c: 75.0, f: 2.7 },
+  { id: "black-rice", en: "Black rice (raw)", zh: "黑米（生）", cat: "staple", kcal: 341, p: 9.4, c: 72.2, f: 2.5 },
+  { id: "millet", en: "Millet (raw)", zh: "小米（生）", cat: "staple", kcal: 361, p: 9.0, c: 75.1, f: 3.1 },
+  { id: "millet-porridge", en: "Millet porridge", zh: "小米粥", cat: "staple", kcal: 46, p: 1.1, c: 9.9, f: 0.3 },
+  { id: "congee", en: "Rice congee", zh: "白粥", cat: "staple", kcal: 46, p: 1.1, c: 9.9, f: 0.3 },
+  { id: "multigrain-rice", en: "Multigrain rice", zh: "杂粮饭", cat: "staple", kcal: 118, p: 3.0, c: 25.0, f: 0.5 },
+  { id: "glutinous-rice", en: "Glutinous rice (raw)", zh: "糯米（生）", cat: "staple", kcal: 350, p: 7.3, c: 78.3, f: 1.0 },
+  { id: "oats", en: "Oats (raw)", zh: "燕麦片（生）", cat: "staple", kcal: 367, p: 15.0, c: 66.9, f: 6.7 },
+  { id: "oatmeal", en: "Oatmeal (cooked)", zh: "燕麦粥", cat: "staple", kcal: 71, p: 2.5, c: 12.0, f: 1.5 },
+  { id: "whole-wheat-bread", en: "Whole wheat bread", zh: "全麦面包", cat: "staple", kcal: 247, p: 9.0, c: 47.0, f: 3.6 },
+  { id: "white-bread", en: "White bread", zh: "白面包", cat: "staple", kcal: 267, p: 8.3, c: 49.0, f: 5.1 },
+  { id: "baguette", en: "Baguette", zh: "法棍", cat: "staple", kcal: 278, p: 8.8, c: 57.0, f: 1.2 },
+  { id: "mantou", en: "Steamed bun", zh: "馒头", cat: "staple", kcal: 223, p: 7.0, c: 47.0, f: 1.1 },
+  { id: "whole-wheat-mantou", en: "Whole wheat bun", zh: "全麦馒头", cat: "staple", kcal: 210, p: 8.0, c: 43.0, f: 1.2 },
+  { id: "steamed-roll", en: "Steamed roll", zh: "花卷", cat: "staple", kcal: 217, p: 6.8, c: 45.0, f: 1.2 },
+  { id: "wheat-noodle-dry", en: "Wheat noodles (dry)", zh: "挂面（干）", cat: "staple", kcal: 353, p: 11.0, c: 71.5, f: 0.9 },
+  { id: "wheat-noodle-cooked", en: "Wheat noodles (cooked)", zh: "煮面条", cat: "staple", kcal: 107, p: 3.9, c: 22.8, f: 0.3 },
+  { id: "rice-noodle-dry", en: "Rice noodles (dry)", zh: "米粉（干）", cat: "staple", kcal: 349, p: 7.4, c: 77.9, f: 0.8 },
+  { id: "rice-noodle-cooked", en: "Rice noodles (cooked)", zh: "煮米粉", cat: "staple", kcal: 97, p: 2.0, c: 21.0, f: 0.3 },
+  { id: "vermicelli", en: "Mung bean vermicelli", zh: "粉丝", cat: "staple", kcal: 339, p: 0.8, c: 83.7, f: 0.2 },
+  { id: "sweet-potato-noodle", en: "Sweet potato noodles", zh: "红薯粉条", cat: "staple", kcal: 337, p: 0.5, c: 83.5, f: 0.1 },
+  { id: "buckwheat-noodle", en: "Buckwheat noodles (cooked)", zh: "荞麦面", cat: "staple", kcal: 110, p: 5.1, c: 21.4, f: 0.1 },
+  { id: "buckwheat", en: "Buckwheat (raw)", zh: "荞麦（生）", cat: "staple", kcal: 337, p: 9.3, c: 73.0, f: 2.3 },
+  { id: "flour", en: "Wheat flour", zh: "小麦面粉", cat: "staple", kcal: 366, p: 11.2, c: 73.6, f: 1.5 },
+  { id: "whole-wheat-flour", en: "Whole wheat flour", zh: "全麦面粉", cat: "staple", kcal: 339, p: 11.8, c: 73.5, f: 1.8 },
+  { id: "cornmeal", en: "Cornmeal", zh: "玉米面", cat: "staple", kcal: 349, p: 8.1, c: 75.6, f: 2.1 },
+  { id: "potato", en: "Potato", zh: "土豆", cat: "staple", kcal: 81, p: 2.0, c: 17.8, f: 0.2 },
+  { id: "sweet-potato", en: "Sweet potato", zh: "红薯", cat: "staple", kcal: 86, p: 1.6, c: 20.1, f: 0.2 },
+  { id: "purple-sweet-potato", en: "Purple sweet potato", zh: "紫薯", cat: "staple", kcal: 82, p: 1.4, c: 18.7, f: 0.2 },
+  { id: "taro", en: "Taro", zh: "芋头", cat: "staple", kcal: 79, p: 2.2, c: 18.1, f: 0.2 },
+  { id: "yam", en: "Yam", zh: "山药", cat: "staple", kcal: 57, p: 1.9, c: 12.4, f: 0.2 },
+  { id: "lotus-root", en: "Lotus root", zh: "莲藕", cat: "staple", kcal: 73, p: 1.9, c: 16.4, f: 0.2 },
+  { id: "corn", en: "Sweet corn", zh: "玉米", cat: "staple", kcal: 112, p: 4.0, c: 22.8, f: 1.2 },
+  { id: "popcorn", en: "Popcorn (air-popped)", zh: "爆米花", cat: "staple", kcal: 382, p: 12.9, c: 77.8, f: 4.5 },
+  { id: "quinoa", en: "Quinoa (raw)", zh: "藜麦（生）", cat: "staple", kcal: 368, p: 14.1, c: 64.2, f: 6.1 },
+  { id: "barley", en: "Barley (raw)", zh: "大麦（生）", cat: "staple", kcal: 354, p: 10.2, c: 73.4, f: 1.4 },
+  { id: "sorghum", en: "Sorghum (raw)", zh: "高粱（生）", cat: "staple", kcal: 351, p: 10.4, c: 74.7, f: 3.1 },
+  { id: "jobs-tears", en: "Job's tears", zh: "薏米", cat: "staple", kcal: 361, p: 12.8, c: 69.1, f: 3.3 },
+  { id: "pasta-cooked", en: "Pasta (cooked)", zh: "意大利面（熟）", cat: "staple", kcal: 158, p: 5.8, c: 30.9, f: 0.9 },
+  { id: "spaghetti-dry", en: "Spaghetti (dry)", zh: "意大利面（干）", cat: "staple", kcal: 371, p: 13.0, c: 74.0, f: 1.5 },
+  { id: "instant-noodle", en: "Instant noodles", zh: "方便面", cat: "staple", kcal: 473, p: 9.8, c: 61.6, f: 21.1 },
+  { id: "dumpling", en: "Dumplings (boiled)", zh: "饺子", cat: "staple", kcal: 250, p: 8.0, c: 35.0, f: 9.0 },
+  { id: "wonton", en: "Wonton", zh: "馄饨", cat: "staple", kcal: 217, p: 9.0, c: 29.0, f: 7.0 },
+  { id: "rice-cake", en: "Rice cake", zh: "年糕", cat: "staple", kcal: 165, p: 3.3, c: 36.0, f: 0.4 },
+  { id: "tangyuan", en: "Glutinous rice balls", zh: "汤圆", cat: "staple", kcal: 311, p: 5.0, c: 48.0, f: 11.0 },
+  { id: "zongzi", en: "Zongzi", zh: "粽子", cat: "staple", kcal: 195, p: 5.5, c: 36.0, f: 3.0 },
+  { id: "croissant", en: "Croissant", zh: "牛角包", cat: "staple", kcal: 406, p: 8.0, c: 45.0, f: 21.0 },
+  { id: "bagel", en: "Bagel", zh: "贝果", cat: "staple", kcal: 250, p: 10.0, c: 50.0, f: 1.5 },
+  { id: "tortilla", en: "Corn tortilla", zh: "玉米饼", cat: "staple", kcal: 218, p: 5.7, c: 44.0, f: 2.8 },
+
+  // Beans and nuts
+  { id: "soybean", en: "Soybeans (dry)", zh: "黄豆（干）", cat: "bean", kcal: 390, p: 35.0, c: 34.2, f: 16.0 },
+  { id: "black-soybean", en: "Black soybeans (dry)", zh: "黑豆（干）", cat: "bean", kcal: 401, p: 36.0, c: 33.6, f: 15.9 },
+  { id: "red-bean", en: "Red beans (dry)", zh: "红豆（干）", cat: "bean", kcal: 324, p: 20.2, c: 63.4, f: 0.6 },
+  { id: "mung-bean", en: "Mung beans (dry)", zh: "绿豆（干）", cat: "bean", kcal: 329, p: 21.6, c: 62.0, f: 0.8 },
+  { id: "kidney-bean", en: "Kidney beans (dry)", zh: "芸豆（干）", cat: "bean", kcal: 333, p: 21.4, c: 63.0, f: 0.6 },
+  { id: "chickpea", en: "Chickpeas (dry)", zh: "鹰嘴豆（干）", cat: "bean", kcal: 364, p: 19.3, c: 60.7, f: 6.0 },
+  { id: "lentil", en: "Lentils (dry)", zh: "小扁豆（干）", cat: "bean", kcal: 353, p: 25.8, c: 60.1, f: 1.1 },
+  { id: "broad-bean", en: "Broad beans (dry)", zh: "蚕豆（干）", cat: "bean", kcal: 335, p: 21.6, c: 59.9, f: 1.0 },
+  { id: "firm-tofu", en: "Firm tofu", zh: "北豆腐", cat: "bean", kcal: 116, p: 12.2, c: 4.5, f: 6.3 },
+  { id: "soft-tofu", en: "Soft tofu", zh: "南豆腐", cat: "bean", kcal: 87, p: 6.2, c: 2.6, f: 5.0 },
+  { id: "silken-tofu", en: "Silken tofu", zh: "内酯豆腐", cat: "bean", kcal: 50, p: 5.0, c: 2.4, f: 2.7 },
+  { id: "dried-tofu", en: "Dried tofu", zh: "豆腐干", cat: "bean", kcal: 140, p: 16.2, c: 5.6, f: 6.8 },
+  { id: "tofu-skin", en: "Tofu skin", zh: "豆腐皮", cat: "bean", kcal: 409, p: 44.6, c: 18.8, f: 17.4 },
+  { id: "soy-milk", en: "Soy milk", zh: "豆浆", cat: "bean", kcal: 31, p: 3.0, c: 1.2, f: 1.6 },
+  { id: "peanut", en: "Peanuts", zh: "花生", cat: "bean", kcal: 574, p: 24.1, c: 21.7, f: 44.4 },
+  { id: "peanut-butter", en: "Peanut butter", zh: "花生酱", cat: "bean", kcal: 594, p: 25.0, c: 20.0, f: 50.0 },
+  { id: "walnut", en: "Walnuts", zh: "核桃", cat: "bean", kcal: 654, p: 15.2, c: 19.1, f: 65.2 },
+  { id: "almond", en: "Almonds", zh: "杏仁", cat: "bean", kcal: 578, p: 21.3, c: 21.7, f: 50.6 },
+  { id: "cashew", en: "Cashews", zh: "腰果", cat: "bean", kcal: 559, p: 18.2, c: 30.2, f: 43.8 },
+  { id: "pistachio", en: "Pistachios", zh: "开心果", cat: "bean", kcal: 562, p: 20.2, c: 27.5, f: 45.4 },
+  { id: "hazelnut", en: "Hazelnuts", zh: "榛子", cat: "bean", kcal: 628, p: 15.0, c: 16.7, f: 60.8 },
+  { id: "macadamia", en: "Macadamia nuts", zh: "夏威夷果", cat: "bean", kcal: 718, p: 8.0, c: 13.8, f: 75.8 },
+  { id: "pecan", en: "Pecans", zh: "碧根果", cat: "bean", kcal: 691, p: 9.2, c: 13.9, f: 72.0 },
+  { id: "pine-nut", en: "Pine nuts", zh: "松子", cat: "bean", kcal: 673, p: 13.4, c: 13.1, f: 68.4 },
+  { id: "sunflower-seed", en: "Sunflower seeds", zh: "葵花籽", cat: "bean", kcal: 615, p: 22.6, c: 20.0, f: 52.8 },
+  { id: "pumpkin-seed", en: "Pumpkin seeds", zh: "南瓜籽", cat: "bean", kcal: 574, p: 30.2, c: 10.7, f: 49.1 },
+  { id: "sesame", en: "Sesame seeds", zh: "芝麻", cat: "bean", kcal: 559, p: 19.1, c: 24.0, f: 46.1 },
+  { id: "chestnut", en: "Chestnuts", zh: "板栗", cat: "bean", kcal: 189, p: 4.2, c: 42.2, f: 0.7 },
+  { id: "lotus-seed", en: "Lotus seeds (dry)", zh: "莲子（干）", cat: "bean", kcal: 344, p: 17.2, c: 67.2, f: 2.0 },
+  { id: "flaxseed", en: "Flaxseeds", zh: "亚麻籽", cat: "bean", kcal: 534, p: 18.3, c: 28.9, f: 42.2 },
+  { id: "chia-seed", en: "Chia seeds", zh: "奇亚籽", cat: "bean", kcal: 486, p: 16.5, c: 42.1, f: 30.7 },
+
+  // Meat, eggs and seafood
+  { id: "chicken-breast", en: "Chicken breast", zh: "鸡胸肉", cat: "meat", kcal: 120, p: 22.5, c: 0, f: 2.6 },
+  { id: "chicken-thigh", en: "Chicken thigh", zh: "鸡腿肉", cat: "meat", kcal: 181, p: 16.4, c: 0, f: 12.8 },
+  { id: "chicken-wing", en: "Chicken wing", zh: "鸡翅", cat: "meat", kcal: 194, p: 17.4, c: 4.6, f: 11.8 },
+  { id: "chicken", en: "Chicken", zh: "鸡肉", cat: "meat", kcal: 167, p: 19.3, c: 1.3, f: 9.4 },
+  { id: "turkey-breast", en: "Turkey breast", zh: "火鸡胸肉", cat: "meat", kcal: 104, p: 24.6, c: 0, f: 0.7 },
+  { id: "duck", en: "Duck", zh: "鸭肉", cat: "meat", kcal: 240, p: 15.5, c: 0.2, f: 19.7 },
+  { id: "pork-tenderloin", en: "Pork tenderloin", zh: "猪里脊", cat: "meat", kcal: 155, p: 20.2, c: 0.7, f: 7.9 },
+  { id: "pork-lean", en: "Lean pork", zh: "瘦猪肉", cat: "meat", kcal: 143, p: 20.3, c: 1.5, f: 6.2 },
+  { id: "pork-belly", en: "Pork belly", zh: "五花肉", cat: "meat", kcal: 508, p: 9.3, c: 0, f: 51.0 },
+  { id: "beef-lean", en: "Lean beef", zh: "瘦牛肉", cat: "meat", kcal: 106, p: 20.2, c: 1.2, f: 2.3 },
+  { id: "steak", en: "Steak", zh: "牛排", cat: "meat", kcal: 200, p: 19.5, c: 0, f: 13.0 },
+  { id: "beef-brisket", en: "Beef brisket", zh: "牛腩", cat: "meat", kcal: 332, p: 17.0, c: 0, f: 28.0 },
+  { id: "lamb", en: "Lamb", zh: "羊肉", cat: "meat", kcal: 203, p: 19.0, c: 0, f: 14.1 },
+  { id: "egg", en: "Egg", zh: "鸡蛋", cat: "meat", kcal: 144, p: 13.3, c: 2.8, f: 8.8 },
+  { id: "egg-white", en: "Egg white", zh: "鸡蛋白", cat: "meat", kcal: 60, p: 11.6, c: 3.1, f: 0.1 },
+  { id: "egg-yolk", en: "Egg yolk", zh: "鸡蛋黄", cat: "meat", kcal: 328, p: 15.2, c: 3.4, f: 28.2 },
+  { id: "duck-egg", en: "Duck egg", zh: "鸭蛋", cat: "meat", kcal: 180, p: 12.6, c: 3.1, f: 13.0 },
+  { id: "quail-egg", en: "Quail egg", zh: "鹌鹑蛋", cat: "meat", kcal: 160, p: 12.8, c: 2.1, f: 11.1 },
+  { id: "salmon", en: "Salmon", zh: "三文鱼", cat: "meat", kcal: 208, p: 20.4, c: 0, f: 13.4 },
+  { id: "tuna", en: "Tuna", zh: "金枪鱼", cat: "meat", kcal: 144, p: 23.3, c: 0, f: 4.9 },
+  { id: "cod", en: "Cod", zh: "鳕鱼", cat: "meat", kcal: 88, p: 20.4, c: 0, f: 0.5 },
+  { id: "sea-bass", en: "Sea bass", zh: "鲈鱼", cat: "meat", kcal: 105, p: 18.6, c: 0, f: 3.4 },
+  { id: "carp", en: "Carp", zh: "鲤鱼", cat: "meat", kcal: 109, p: 17.6, c: 0, f: 4.1 },
+  { id: "tilapia", en: "Tilapia", zh: "罗非鱼", cat: "meat", kcal: 128, p: 20.8, c: 0, f: 4.4 },
+  { id: "shrimp", en: "Shrimp", zh: "虾", cat: "meat", kcal: 93, p: 18.6, c: 0, f: 1.4 },
+  { id: "crab", en: "Crab", zh: "螃蟹", cat: "meat", kcal: 95, p: 17.5, c: 0, f: 2.3 },
+  { id: "squid", en: "Squid", zh: "鱿鱼", cat: "meat", kcal: 84, p: 17.4, c: 0, f: 1.4 },
+  { id: "octopus", en: "Octopus", zh: "章鱼", cat: "meat", kcal: 135, p: 29.0, c: 0, f: 2.1 },
+  { id: "scallop", en: "Scallops", zh: "扇贝", cat: "meat", kcal: 74, p: 12.4, c: 1.6, f: 1.1 },
+  { id: "clam", en: "Clams", zh: "蛤蜊", cat: "meat", kcal: 62, p: 10.1, c: 2.8, f: 1.1 },
+  { id: "mussel", en: "Mussels", zh: "青口", cat: "meat", kcal: 80, p: 11.0, c: 3.0, f: 2.0 },
+  { id: "oyster", en: "Oysters", zh: "生蚝", cat: "meat", kcal: 73, p: 9.0, c: 4.3, f: 2.6 },
+  { id: "sardine", en: "Sardines", zh: "沙丁鱼", cat: "meat", kcal: 208, p: 24.6, c: 0, f: 11.5 },
+  { id: "ham", en: "Ham", zh: "火腿", cat: "meat", kcal: 330, p: 16.0, c: 1.0, f: 29.0 },
+  { id: "bacon", en: "Bacon", zh: "培根", cat: "meat", kcal: 393, p: 13.0, c: 1.4, f: 37.0 },
+  { id: "sausage", en: "Sausage", zh: "香肠", cat: "meat", kcal: 336, p: 15.0, c: 4.0, f: 29.0 },
+  { id: "beef-jerky", en: "Beef jerky", zh: "牛肉干", cat: "meat", kcal: 550, p: 45.0, c: 10.0, f: 36.0 },
+
+  // Dairy, drinks and fats
+  { id: "milk-whole", en: "Whole milk", zh: "全脂牛奶", cat: "dairy", kcal: 65, p: 3.3, c: 4.9, f: 3.6 },
+  { id: "milk-lowfat", en: "Low-fat milk", zh: "低脂牛奶", cat: "dairy", kcal: 46, p: 3.4, c: 4.9, f: 1.4 },
+  { id: "milk-skim", en: "Skim milk", zh: "脱脂牛奶", cat: "dairy", kcal: 34, p: 3.4, c: 5.0, f: 0.1 },
+  { id: "yogurt", en: "Plain yogurt", zh: "无糖酸奶", cat: "dairy", kcal: 72, p: 3.5, c: 4.7, f: 4.7 },
+  { id: "greek-yogurt", en: "Greek yogurt", zh: "希腊酸奶", cat: "dairy", kcal: 97, p: 9.0, c: 4.0, f: 5.0 },
+  { id: "cheese", en: "Cheese", zh: "奶酪", cat: "dairy", kcal: 328, p: 25.7, c: 3.5, f: 23.5 },
+  { id: "cottage-cheese", en: "Cottage cheese", zh: "茅屋奶酪", cat: "dairy", kcal: 98, p: 11.1, c: 3.4, f: 4.3 },
+  { id: "butter", en: "Butter", zh: "黄油", cat: "dairy", kcal: 717, p: 0.9, c: 0.1, f: 81.1 },
+  { id: "cream", en: "Cream", zh: "奶油", cat: "dairy", kcal: 340, p: 2.1, c: 4.0, f: 36.0 },
+  { id: "ice-cream", en: "Ice cream", zh: "冰淇淋", cat: "dairy", kcal: 207, p: 3.5, c: 23.6, f: 10.9 },
+  { id: "honey", en: "Honey", zh: "蜂蜜", cat: "dairy", kcal: 321, p: 0.4, c: 79.5, f: 0 },
+  { id: "sugar", en: "White sugar", zh: "白砂糖", cat: "dairy", kcal: 400, p: 0, c: 99.9, f: 0 },
+  { id: "brown-sugar", en: "Brown sugar", zh: "红糖", cat: "dairy", kcal: 389, p: 0.7, c: 96.6, f: 0 },
+  { id: "olive-oil", en: "Olive oil", zh: "橄榄油", cat: "dairy", kcal: 899, p: 0, c: 0, f: 99.9 },
+  { id: "peanut-oil", en: "Peanut oil", zh: "花生油", cat: "dairy", kcal: 899, p: 0, c: 0, f: 99.9 },
+  { id: "black-coffee", en: "Black coffee", zh: "黑咖啡", cat: "dairy", kcal: 2, p: 0.3, c: 0, f: 0 },
+  { id: "latte", en: "Latte", zh: "拿铁咖啡", cat: "dairy", kcal: 42, p: 2.8, c: 4.0, f: 1.6 },
+  { id: "green-tea", en: "Green tea", zh: "绿茶", cat: "dairy", kcal: 1, p: 0, c: 0.2, f: 0 },
+  { id: "cola", en: "Cola", zh: "可乐", cat: "dairy", kcal: 43, p: 0, c: 10.6, f: 0 },
+  { id: "orange-juice", en: "Orange juice", zh: "橙汁", cat: "dairy", kcal: 45, p: 0.7, c: 10.4, f: 0.2 },
+  { id: "apple-juice", en: "Apple juice", zh: "苹果汁", cat: "dairy", kcal: 46, p: 0.1, c: 11.3, f: 0.1 }
+];
+
+window.RECIPE_CATEGORIES = [
+  { key: "weightloss", en: "Fat loss", zh: "减脂" },
+  { key: "muscle", en: "Muscle gain", zh: "增肌" },
+  { key: "sugar", en: "Weight & sugar control", zh: "控糖减重" },
+  { key: "pregnancy", en: "Pregnancy", zh: "孕期" },
+  { key: "light", en: "Light & vegetarian", zh: "清淡低脂" }
+];
+
+window.RECIPES = [
+  {
+    id: "wl-chicken-salad", cat: "weightloss", time: 15, kcal: 248, p: 27, c: 12, f: 9,
+    title: { en: "Chicken breast salad", zh: "鸡胸肉沙拉" },
+    ing: [
+      { en: "Chicken breast", zh: "鸡胸肉", g: 100 },
+      { en: "Lettuce", zh: "生菜", g: 80 },
+      { en: "Cherry tomatoes", zh: "圣女果", g: 60 },
+      { en: "Cucumber", zh: "黄瓜", g: 50 },
+      { en: "Olive oil", zh: "橄榄油", g: 5 },
+      { en: "Lemon juice", zh: "柠檬汁", g: 10 }
+    ],
+    steps: {
+      en: ["Boil or grill the chicken breast, then slice it.", "Wash and chop the vegetables.", "Mix everything with olive oil and lemon juice."],
+      zh: ["把鸡胸肉煮熟或煎熟后切片。", "蔬菜洗净切好。", "把所有材料混合，淋上橄榄油和柠檬汁。"]
+    }
+  },
+  {
+    id: "wl-steamed-cod", cat: "weightloss", time: 18, kcal: 226, p: 27, c: 10, f: 7,
+    title: { en: "Steamed cod with vegetables", zh: "清蒸鳕鱼配时蔬" },
+    ing: [
+      { en: "Cod fillet", zh: "鳕鱼", g: 120 },
+      { en: "Broccoli", zh: "西兰花", g: 100 },
+      { en: "Carrot", zh: "胡萝卜", g: 50 },
+      { en: "Ginger", zh: "姜", g: 5 },
+      { en: "Low-sodium soy sauce", zh: "低盐酱油", g: 5 }
+    ],
+    steps: {
+      en: ["Place cod and sliced ginger on a plate and steam for 10 minutes.", "Blanch broccoli and carrot for 3 minutes.", "Drain, plate together, and drizzle with soy sauce."],
+      zh: ["鳕鱼和姜丝上锅蒸 10 分钟。", "西兰花和胡萝卜焯水 3 分钟。", "沥水装盘，淋上低盐酱油。"]
+    }
+  },
+  {
+    id: "wl-tomato-tofu-soup", cat: "weightloss", time: 12, kcal: 182, p: 16, c: 12, f: 8,
+    title: { en: "Tomato tofu soup", zh: "番茄豆腐汤" },
+    ing: [
+      { en: "Tomato", zh: "番茄", g: 150 },
+      { en: "Firm tofu", zh: "北豆腐", g: 100 },
+      { en: "Bok choy", zh: "小白菜", g: 80 },
+      { en: "Egg", zh: "鸡蛋", g: 50 },
+      { en: "Salt", zh: "盐", g: 1 }
+    ],
+    steps: {
+      en: ["Cook chopped tomato in a little water until soft.", "Add tofu cubes and simmer for 4 minutes.", "Add bok choy, pour in beaten egg, and season lightly."],
+      zh: ["番茄切块，加少许水煮软。", "加入豆腐块再煮 4 分钟。", "放入小白菜，淋入蛋液，少盐调味。"]
+    }
+  },
+  {
+    id: "wl-shrimp-zucchini", cat: "weightloss", time: 12, kcal: 214, p: 22, c: 10, f: 8,
+    title: { en: "Shrimp zucchini noodles", zh: "虾仁西葫芦面" },
+    ing: [
+      { en: "Zucchini", zh: "西葫芦", g: 200 },
+      { en: "Shrimp", zh: "虾仁", g: 80 },
+      { en: "Garlic", zh: "大蒜", g: 5 },
+      { en: "Olive oil", zh: "橄榄油", g: 5 }
+    ],
+    steps: {
+      en: ["Spiralize or shred the zucchini.", "Saute garlic and shrimp in a little oil until pink.", "Add zucchini and stir for 2 minutes until just tender."],
+      zh: ["西葫芦刨成面条状或细丝。", "用少量油炒香蒜末和虾仁至变色。", "加入西葫芦翻炒 2 分钟即可。"]
+    }
+  },
+  {
+    id: "wl-oat-banana", cat: "weightloss", time: 8, kcal: 284, p: 13, c: 48, f: 6,
+    title: { en: "Banana oat bowl", zh: "香蕉燕麦碗" },
+    ing: [
+      { en: "Oats", zh: "燕麦片", g: 30 },
+      { en: "Milk", zh: "牛奶", g: 200 },
+      { en: "Banana", zh: "香蕉", g: 80 },
+      { en: "Blueberries", zh: "蓝莓", g: 30 }
+    ],
+    steps: {
+      en: ["Simmer oats with milk for 3 minutes, stirring often.", "Pour into a bowl and top with banana and blueberries."],
+      zh: ["燕麦加牛奶小火煮 3 分钟并搅拌。", "盛入碗中，放上香蕉和蓝莓。"]
+    }
+  },
+  {
+    id: "wl-eggwhite-omelet", cat: "weightloss", time: 10, kcal: 196, p: 21, c: 8, f: 7,
+    title: { en: "Egg white vegetable omelet", zh: "蛋白蔬菜蛋饼" },
+    ing: [
+      { en: "Egg whites", zh: "鸡蛋白", g: 100 },
+      { en: "Spinach", zh: "菠菜", g: 50 },
+      { en: "Button mushrooms", zh: "白蘑菇", g: 50 },
+      { en: "Tomato", zh: "番茄", g: 40 }
+    ],
+    steps: {
+      en: ["Whisk the egg whites.", "Cook vegetables in a nonstick pan for 2 minutes.", "Pour in egg whites and cook until set."],
+      zh: ["蛋白打散备用。", "蔬菜在不粘锅里炒 2 分钟。", "倒入蛋白，煎至凝固即可。"]
+    }
+  },
+  {
+    id: "wl-beef-broccoli", cat: "weightloss", time: 15, kcal: 278, p: 28, c: 12, f: 12,
+    title: { en: "Beef and broccoli stir-fry", zh: "西兰花炒牛肉" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 100 },
+      { en: "Broccoli", zh: "西兰花", g: 150 },
+      { en: "Garlic", zh: "大蒜", g: 5 },
+      { en: "Low-sodium soy sauce", zh: "低盐酱油", g: 5 }
+    ],
+    steps: {
+      en: ["Blanch broccoli for 2 minutes.", "Stir-fry sliced beef with garlic until nearly cooked.", "Add broccoli, season lightly, and toss for 1 minute."],
+      zh: ["西兰花焯水 2 分钟。", "牛肉片和蒜末炒至快熟。", "加入西兰花，少盐调味再翻炒 1 分钟。"]
+    }
+  },
+  {
+    id: "wl-pumpkin-chicken-congee", cat: "weightloss", time: 30, kcal: 264, p: 18, c: 34, f: 5,
+    title: { en: "Pumpkin chicken congee", zh: "南瓜鸡丝粥" },
+    ing: [
+      { en: "Pumpkin", zh: "南瓜", g: 150 },
+      { en: "Rice", zh: "大米", g: 30 },
+      { en: "Chicken breast", zh: "鸡胸肉", g: 60 }
+    ],
+    steps: {
+      en: ["Cook rice and diced pumpkin in water until soft.", "Add chicken breast and simmer until cooked through.", "Shred the chicken, return it to the pot, and serve."],
+      zh: ["大米和南瓜丁加水煮至软烂。", "放入鸡胸肉煮熟。", "把鸡肉撕成丝放回锅中即可。"]
+    }
+  },
+  {
+    id: "wl-tuna-salad", cat: "weightloss", time: 8, kcal: 238, p: 24, c: 14, f: 8,
+    title: { en: "Tuna salad", zh: "金枪鱼沙拉" },
+    ing: [
+      { en: "Canned tuna in water", zh: "水浸金枪鱼", g: 80 },
+      { en: "Lettuce", zh: "生菜", g: 80 },
+      { en: "Sweet corn", zh: "玉米粒", g: 50 },
+      { en: "Cucumber", zh: "黄瓜", g: 50 },
+      { en: "Olive oil", zh: "橄榄油", g: 5 }
+    ],
+    steps: {
+      en: ["Drain the tuna and flake it.", "Chop the vegetables and mix with tuna and olive oil."],
+      zh: ["金枪鱼沥水后弄散。", "蔬菜切好，和金枪鱼、橄榄油拌匀。"]
+    }
+  },
+  {
+    id: "wl-miso-soup", cat: "weightloss", time: 12, kcal: 188, p: 15, c: 16, f: 6,
+    title: { en: "Miso vegetable tofu soup", zh: "味噌蔬菜豆腐汤" },
+    ing: [
+      { en: "Firm tofu", zh: "北豆腐", g: 100 },
+      { en: "Cabbage", zh: "卷心菜", g: 80 },
+      { en: "Enoki mushrooms", zh: "金针菇", g: 50 },
+      { en: "Wakame", zh: "裙带菜", g: 5 },
+      { en: "Miso paste", zh: "味噌", g: 12 }
+    ],
+    steps: {
+      en: ["Simmer tofu, cabbage, and mushrooms in water for 5 minutes.", "Turn off heat, stir in miso paste and wakame."],
+      zh: ["豆腐、卷心菜和金针菇加水煮 5 分钟。", "关火后拌入味噌和裙带菜。"]
+    }
+  },
+
+  {
+    id: "mg-chicken-rice", cat: "muscle", time: 25, kcal: 486, p: 42, c: 48, f: 12,
+    title: { en: "Grilled chicken brown rice bowl", zh: "香煎鸡胸糙米饭" },
+    ing: [
+      { en: "Chicken breast", zh: "鸡胸肉", g: 150 },
+      { en: "Brown rice, cooked", zh: "熟糙米饭", g: 150 },
+      { en: "Broccoli", zh: "西兰花", g: 100 },
+      { en: "Olive oil", zh: "橄榄油", g: 8 }
+    ],
+    steps: {
+      en: ["Season and grill the chicken breast until cooked.", "Steam the broccoli.", "Serve everything over warm brown rice."],
+      zh: ["鸡胸肉调味后煎熟。", "西兰花蒸熟。", "全部放在热糙米饭上即可。"]
+    }
+  },
+  {
+    id: "mg-beef-potato", cat: "muscle", time: 22, kcal: 524, p: 35, c: 42, f: 22,
+    title: { en: "Beef and potato energy bowl", zh: "牛肉土豆能量碗" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 120 },
+      { en: "Potato", zh: "土豆", g: 150 },
+      { en: "Bell pepper", zh: "彩椒", g: 50 },
+      { en: "Olive oil", zh: "橄榄油", g: 8 }
+    ],
+    steps: {
+      en: ["Boil or roast the potato until tender.", "Stir-fry beef with bell pepper and a little oil.", "Combine in a bowl and season lightly."],
+      zh: ["土豆煮熟或烤熟。", "牛肉和彩椒用少量油炒熟。", "装碗后少盐调味。"]
+    }
+  },
+  {
+    id: "mg-salmon-sweetpotato", cat: "muscle", time: 25, kcal: 504, p: 31, c: 38, f: 23,
+    title: { en: "Salmon sweet potato plate", zh: "三文鱼红薯盘" },
+    ing: [
+      { en: "Salmon", zh: "三文鱼", g: 130 },
+      { en: "Sweet potato", zh: "红薯", g: 180 },
+      { en: "Asparagus", zh: "芦笋", g: 80 },
+      { en: "Olive oil", zh: "橄榄油", g: 6 }
+    ],
+    steps: {
+      en: ["Roast sweet potato and asparagus until tender.", "Pan-sear the salmon until cooked to your liking.", "Plate together with a light oil drizzle."],
+      zh: ["红薯和芦笋烤熟。", "三文鱼煎至熟透。", "装盘后淋少量橄榄油。"]
+    }
+  },
+  {
+    id: "mg-tofu-egg-rice", cat: "muscle", time: 18, kcal: 462, p: 30, c: 47, f: 16,
+    title: { en: "Tofu egg rice bowl", zh: "豆腐鸡蛋饭" },
+    ing: [
+      { en: "Firm tofu", zh: "北豆腐", g: 120 },
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Rice, cooked", zh: "熟米饭", g: 150 },
+      { en: "Spinach", zh: "菠菜", g: 80 }
+    ],
+    steps: {
+      en: ["Scramble the eggs and set aside.", "Cook tofu cubes until golden.", "Serve tofu, eggs, and spinach over rice."],
+      zh: ["鸡蛋炒熟盛出。", "豆腐煎至微黄。", "豆腐、鸡蛋和菠菜铺在米饭上。"]
+    }
+  },
+  {
+    id: "mg-chicken-pasta", cat: "muscle", time: 25, kcal: 518, p: 39, c: 56, f: 14,
+    title: { en: "Chicken pasta", zh: "鸡肉意面" },
+    ing: [
+      { en: "Chicken breast", zh: "鸡胸肉", g: 120 },
+      { en: "Spaghetti, dry", zh: "意大利面（干）", g: 70 },
+      { en: "Tomato sauce", zh: "番茄酱", g: 80 },
+      { en: "Broccoli", zh: "西兰花", g: 80 }
+    ],
+    steps: {
+      en: ["Cook the pasta in boiling water.", "Cook sliced chicken, then add tomato sauce.", "Toss pasta and broccoli with the sauce."],
+      zh: ["意面煮熟。", "鸡胸肉片炒熟后加入番茄酱。", "把意面和西兰花与酱汁拌匀。"]
+    }
+  },
+  {
+    id: "mg-tuna-sandwich", cat: "muscle", time: 10, kcal: 452, p: 36, c: 38, f: 17,
+    title: { en: "Tuna whole wheat sandwich", zh: "金枪鱼全麦三明治" },
+    ing: [
+      { en: "Whole wheat bread", zh: "全麦面包", g: 80 },
+      { en: "Tuna", zh: "金枪鱼", g: 100 },
+      { en: "Boiled egg", zh: "水煮蛋", g: 50 },
+      { en: "Lettuce", zh: "生菜", g: 30 }
+    ],
+    steps: {
+      en: ["Mix tuna with chopped boiled egg.", "Layer the filling and lettuce between bread slices."],
+      zh: ["金枪鱼和切碎的水煮蛋拌匀。", "把馅料和生菜夹在面包中间。"]
+    }
+  },
+  {
+    id: "mg-oat-pancake", cat: "muscle", time: 15, kcal: 428, p: 27, c: 55, f: 12,
+    title: { en: "High-protein oat pancakes", zh: "高蛋白燕麦松饼" },
+    ing: [
+      { en: "Oats", zh: "燕麦片", g: 40 },
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Banana", zh: "香蕉", g: 90 },
+      { en: "Plain yogurt", zh: "无糖酸奶", g: 80 }
+    ],
+    steps: {
+      en: ["Blend oats, eggs, and banana into a batter.", "Cook small pancakes in a nonstick pan.", "Serve with yogurt on top."],
+      zh: ["燕麦、鸡蛋和香蕉打成面糊。", "在不粘锅里煎成小饼。", "淋上酸奶即可。"]
+    }
+  },
+  {
+    id: "mg-turkey-quinoa", cat: "muscle", time: 25, kcal: 502, p: 42, c: 48, f: 14,
+    title: { en: "Turkey quinoa bowl", zh: "火鸡藜麦碗" },
+    ing: [
+      { en: "Turkey breast", zh: "火鸡胸肉", g: 120 },
+      { en: "Quinoa, cooked", zh: "熟藜麦", g: 150 },
+      { en: "Chickpeas, cooked", zh: "熟鹰嘴豆", g: 50 },
+      { en: "Spinach", zh: "菠菜", g: 80 }
+    ],
+    steps: {
+      en: ["Cook the turkey breast and slice it.", "Warm quinoa and chickpeas.", "Bowl everything with fresh spinach."],
+      zh: ["火鸡胸肉煎熟切片。", "藜麦和鹰嘴豆加热。", "与新鲜菠菜一起装碗。"]
+    }
+  },
+  {
+    id: "mg-shrimp-egg-noodle", cat: "muscle", time: 15, kcal: 468, p: 38, c: 50, f: 13,
+    title: { en: "Shrimp egg noodles", zh: "虾仁鸡蛋面" },
+    ing: [
+      { en: "Shrimp", zh: "虾仁", g: 100 },
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Wheat noodles, cooked", zh: "熟面条", g: 150 },
+      { en: "Bok choy", zh: "小白菜", g: 80 }
+    ],
+    steps: {
+      en: ["Scramble the eggs and set aside.", "Cook shrimp until pink.", "Add noodles and bok choy, then return eggs and toss."],
+      zh: ["鸡蛋炒熟盛出。", "虾仁炒至变色。", "加入面条和小白菜，再放回鸡蛋拌匀。"]
+    }
+  },
+  {
+    id: "mg-beef-burrito", cat: "muscle", time: 22, kcal: 542, p: 38, c: 54, f: 18,
+    title: { en: "Beef burrito bowl", zh: "牛肉卷饼碗" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 120 },
+      { en: "Rice, cooked", zh: "熟米饭", g: 150 },
+      { en: "Black beans, cooked", zh: "熟黑豆", g: 50 },
+      { en: "Avocado", zh: "牛油果", g: 30 }
+    ],
+    steps: {
+      en: ["Season and cook the beef.", "Warm rice and beans.", "Combine in a bowl and top with avocado."],
+      zh: ["牛肉调味炒熟。", "米饭和黑豆加热。", "装碗后放上牛油果。"]
+    }
+  },
+
+  {
+    id: "sg-mushroom-chicken", cat: "sugar", time: 25, kcal: 318, p: 30, c: 18, f: 14,
+    title: { en: "Steamed chicken with mushrooms", zh: "香菇蒸鸡" },
+    ing: [
+      { en: "Chicken thigh", zh: "鸡腿肉", g: 100 },
+      { en: "Shiitake mushrooms", zh: "香菇", g: 80 },
+      { en: "Ginger", zh: "姜", g: 5 },
+      { en: "Low-sodium soy sauce", zh: "低盐酱油", g: 5 }
+    ],
+    steps: {
+      en: ["Slice chicken and mushrooms, then place with ginger on a plate.", "Steam for 15 minutes until cooked.", "Drizzle with a little soy sauce."],
+      zh: ["鸡肉和香菇切片，与姜丝一起装盘。", "上锅蒸 15 分钟至熟。", "淋少量低盐酱油。"]
+    }
+  },
+  {
+    id: "sg-ginger-fish", cat: "sugar", time: 18, kcal: 302, p: 30, c: 6, f: 16,
+    title: { en: "Braised fish with ginger and scallion", zh: "葱姜炖鱼" },
+    ing: [
+      { en: "Sea bass", zh: "鲈鱼", g: 150 },
+      { en: "Ginger", zh: "姜", g: 8 },
+      { en: "Scallion", zh: "大葱", g: 20 },
+      { en: "Low-sodium soy sauce", zh: "低盐酱油", g: 5 }
+    ],
+    steps: {
+      en: ["Lightly pan-sear the fish.", "Add ginger, scallion, and a little water, then simmer 8 minutes.", "Finish with soy sauce."],
+      zh: ["鱼块略煎一下。", "加入姜葱和少量水，小火炖 8 分钟。", "最后淋一点低盐酱油。"]
+    }
+  },
+  {
+    id: "sg-bitter-melon-beef", cat: "sugar", time: 15, kcal: 288, p: 26, c: 12, f: 14,
+    title: { en: "Bitter melon beef", zh: "苦瓜炒牛肉" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 100 },
+      { en: "Bitter melon", zh: "苦瓜", g: 120 },
+      { en: "Garlic", zh: "大蒜", g: 5 },
+      { en: "Cooking oil", zh: "食用油", g: 5 }
+    ],
+    steps: {
+      en: ["Blanch bitter melon slices to soften.", "Stir-fry beef with garlic.", "Add bitter melon and toss until just cooked."],
+      zh: ["苦瓜片焯水去苦味。", "牛肉和蒜末炒香。", "加入苦瓜翻炒至熟。"]
+    }
+  },
+  {
+    id: "sg-okra-egg", cat: "sugar", time: 15, kcal: 224, p: 15, c: 10, f: 12,
+    title: { en: "Steamed eggs with okra", zh: "秋葵蒸蛋" },
+    ing: [
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Okra", zh: "秋葵", g: 60 },
+      { en: "Water", zh: "水", g: 60 },
+      { en: "Light soy sauce", zh: "淡盐酱油", g: 4 }
+    ],
+    steps: {
+      en: ["Beat eggs with water.", "Slice okra and add to the egg mixture.", "Steam for 10 minutes and season lightly."],
+      zh: ["鸡蛋加水打散。", "秋葵切片放入蛋液。", "蒸 10 分钟后少盐调味。"]
+    }
+  },
+  {
+    id: "sg-buckwheat-salad", cat: "sugar", time: 18, kcal: 342, p: 16, c: 48, f: 10,
+    title: { en: "Buckwheat noodle salad", zh: "荞麦面沙拉" },
+    ing: [
+      { en: "Buckwheat noodles, cooked", zh: "熟荞麦面", g: 150 },
+      { en: "Cucumber", zh: "黄瓜", g: 80 },
+      { en: "Carrot", zh: "胡萝卜", g: 50 },
+      { en: "Sesame", zh: "芝麻", g: 5 },
+      { en: "Rice vinegar", zh: "米醋", g: 8 }
+    ],
+    steps: {
+      en: ["Rinse cooked noodles under cold water.", "Shred cucumber and carrot.", "Toss with vinegar and sesame."],
+      zh: ["熟荞麦面过凉水。", "黄瓜和胡萝卜切丝。", "加米醋和芝麻拌匀。"]
+    }
+  },
+  {
+    id: "sg-kelp-tofu-soup", cat: "sugar", time: 15, kcal: 176, p: 14, c: 12, f: 7,
+    title: { en: "Kelp tofu soup", zh: "豆腐海带汤" },
+    ing: [
+      { en: "Firm tofu", zh: "北豆腐", g: 100 },
+      { en: "Fresh kelp", zh: "海带", g: 80 },
+      { en: "Scallion", zh: "大葱", g: 10 },
+      { en: "Salt", zh: "盐", g: 1 }
+    ],
+    steps: {
+      en: ["Simmer kelp in water for 5 minutes.", "Add tofu cubes and cook 4 more minutes.", "Finish with scallion and a pinch of salt."],
+      zh: ["海带加水煮 5 分钟。", "加入豆腐再煮 4 分钟。", "撒葱花和少量盐。"]
+    }
+  },
+  {
+    id: "sg-cauliflower-chicken", cat: "sugar", time: 18, kcal: 298, p: 30, c: 14, f: 12,
+    title: { en: "Cauliflower chicken rice", zh: "菜花饭鸡丁" },
+    ing: [
+      { en: "Chicken breast", zh: "鸡胸肉", g: 120 },
+      { en: "Cauliflower", zh: "花菜", g: 200 },
+      { en: "Carrot", zh: "胡萝卜", g: 40 },
+      { en: "Cooking oil", zh: "食用油", g: 5 }
+    ],
+    steps: {
+      en: ["Pulse cauliflower into rice-size pieces.", "Stir-fry chicken and carrot.", "Add cauliflower and cook for 4 minutes."],
+      zh: ["花菜打碎成米粒大小。", "鸡丁和胡萝卜炒熟。", "加入花菜碎炒 4 分钟。"]
+    }
+  },
+  {
+    id: "sg-pumpkin-yogurt", cat: "sugar", time: 15, kcal: 212, p: 8, c: 38, f: 4,
+    title: { en: "Steamed pumpkin with yogurt", zh: "蒸南瓜酸奶" },
+    ing: [
+      { en: "Pumpkin", zh: "南瓜", g: 250 },
+      { en: "Plain yogurt", zh: "无糖酸奶", g: 80 },
+      { en: "Chia seeds", zh: "奇亚籽", g: 5 }
+    ],
+    steps: {
+      en: ["Steam pumpkin until soft.", "Mash lightly and top with yogurt and chia seeds."],
+      zh: ["南瓜蒸熟。", "稍微压散，淋上酸奶和奇亚籽。"]
+    }
+  },
+  {
+    id: "sg-mushroom-tofu", cat: "sugar", time: 18, kcal: 264, p: 18, c: 16, f: 12,
+    title: { en: "Mushroom tofu stew", zh: "菌菇豆腐煲" },
+    ing: [
+      { en: "Firm tofu", zh: "北豆腐", g: 120 },
+      { en: "Mixed mushrooms", zh: "混合菌菇", g: 120 },
+      { en: "Bok choy", zh: "小白菜", g: 80 },
+      { en: "Low-sodium soy sauce", zh: "低盐酱油", g: 5 }
+    ],
+    steps: {
+      en: ["Cook mushrooms in a little water for 4 minutes.", "Add tofu and simmer 5 minutes.", "Add bok choy and season lightly."],
+      zh: ["菌菇加少量水煮 4 分钟。", "加入豆腐煮 5 分钟。", "放入小白菜并少盐调味。"]
+    }
+  },
+  {
+    id: "sg-papaya-shrimp", cat: "sugar", time: 18, kcal: 246, p: 22, c: 18, f: 8,
+    title: { en: "Green papaya shrimp soup", zh: "青木瓜虾汤" },
+    ing: [
+      { en: "Green papaya", zh: "青木瓜", g: 150 },
+      { en: "Shrimp", zh: "虾仁", g: 80 },
+      { en: "Tomato", zh: "番茄", g: 80 },
+      { en: "Scallion", zh: "大葱", g: 10 }
+    ],
+    steps: {
+      en: ["Simmer shredded papaya in water for 8 minutes.", "Add tomato and shrimp, and cook until shrimp are pink.", "Finish with scallion."],
+      zh: ["青木瓜丝加水煮 8 分钟。", "加入番茄和虾仁，煮至虾仁变色。", "撒葱花即可。"]
+    }
+  },
+
+  {
+    id: "pg-salmon-spinach-omelet", cat: "pregnancy", time: 15, kcal: 354, p: 27, c: 12, f: 21,
+    title: { en: "Salmon spinach omelet", zh: "三文鱼菠菜蛋卷" },
+    ing: [
+      { en: "Salmon", zh: "三文鱼", g: 80 },
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Spinach", zh: "菠菜", g: 80 },
+      { en: "Olive oil", zh: "橄榄油", g: 5 }
+    ],
+    steps: {
+      en: ["Cook salmon and flake it.", "Whisk eggs with chopped spinach.", "Pour into a pan, add salmon, and cook into an omelet."],
+      zh: ["三文鱼煎熟弄散。", "鸡蛋和菠菜碎打散。", "倒入锅中，加三文鱼煎成蛋卷。"]
+    }
+  },
+  {
+    id: "pg-tomato-beef", cat: "pregnancy", time: 35, kcal: 384, p: 31, c: 18, f: 19,
+    title: { en: "Tomato beef stew", zh: "番茄炖牛肉" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 120 },
+      { en: "Tomato", zh: "番茄", g: 200 },
+      { en: "Onion", zh: "洋葱", g: 50 },
+      { en: "Cooking oil", zh: "食用油", g: 5 }
+    ],
+    steps: {
+      en: ["Brown the beef in a pot.", "Add tomato and onion with a little water.", "Simmer until the beef is tender."],
+      zh: ["牛肉在锅里略煎。", "加入番茄、洋葱和少量水。", "小火炖至牛肉软烂。"]
+    }
+  },
+  {
+    id: "pg-broccoli-chicken-congee", cat: "pregnancy", time: 30, kcal: 322, p: 22, c: 36, f: 9,
+    title: { en: "Broccoli chicken congee", zh: "西兰花鸡丝粥" },
+    ing: [
+      { en: "Rice", zh: "大米", g: 40 },
+      { en: "Chicken breast", zh: "鸡胸肉", g: 70 },
+      { en: "Broccoli", zh: "西兰花", g: 80 },
+      { en: "Ginger", zh: "姜", g: 5 }
+    ],
+    steps: {
+      en: ["Cook rice with water until soft.", "Add chicken and ginger, then cook through.", "Add finely chopped broccoli and simmer 3 minutes."],
+      zh: ["大米加水煮软。", "加入鸡肉和姜丝煮熟。", "放入切碎的西兰花再煮 3 分钟。"]
+    }
+  },
+  {
+    id: "pg-redbean-millet", cat: "pregnancy", time: 40, kcal: 282, p: 12, c: 54, f: 3,
+    title: { en: "Red bean millet porridge", zh: "红豆小米粥" },
+    ing: [
+      { en: "Millet", zh: "小米", g: 40 },
+      { en: "Red beans, dry", zh: "红豆（干）", g: 20 },
+      { en: "Jujube", zh: "红枣", g: 15 }
+    ],
+    steps: {
+      en: ["Soak red beans for 2 hours, then cook until soft.", "Add millet and jujube, and simmer until thick."],
+      zh: ["红豆提前泡 2 小时，煮至软烂。", "加入小米和红枣，煮至浓稠。"]
+    }
+  },
+  {
+    id: "pg-shrimp-tofu-soup", cat: "pregnancy", time: 15, kcal: 258, p: 27, c: 10, f: 11,
+    title: { en: "Shrimp tofu soup", zh: "虾仁豆腐汤" },
+    ing: [
+      { en: "Shrimp", zh: "虾仁", g: 90 },
+      { en: "Soft tofu", zh: "南豆腐", g: 120 },
+      { en: "Peas", zh: "豌豆", g: 40 },
+      { en: "Ginger", zh: "姜", g: 5 }
+    ],
+    steps: {
+      en: ["Simmer ginger in water, then add shrimp.", "Add tofu cubes and peas, and cook 4 minutes."],
+      zh: ["姜丝加水煮开，放入虾仁。", "加入豆腐块和豌豆再煮 4 分钟。"]
+    }
+  },
+  {
+    id: "pg-pork-egg", cat: "pregnancy", time: 18, kcal: 302, p: 23, c: 8, f: 18,
+    title: { en: "Steamed egg with minced pork", zh: "肉末蒸蛋" },
+    ing: [
+      { en: "Eggs", zh: "鸡蛋", g: 100 },
+      { en: "Lean pork", zh: "瘦猪肉", g: 60 },
+      { en: "Water", zh: "水", g: 60 },
+      { en: "Scallion", zh: "大葱", g: 5 }
+    ],
+    steps: {
+      en: ["Beat eggs with water.", "Add lightly cooked minced pork.", "Steam for 12 minutes and top with scallion."],
+      zh: ["鸡蛋加水打散。", "加入略炒过的肉末。", "蒸 12 分钟后撒葱花。"]
+    }
+  },
+  {
+    id: "pg-pumpkin-beef-rice", cat: "pregnancy", time: 25, kcal: 424, p: 30, c: 46, f: 13,
+    title: { en: "Pumpkin beef rice bowl", zh: "南瓜牛肉饭" },
+    ing: [
+      { en: "Lean beef", zh: "瘦牛肉", g: 100 },
+      { en: "Pumpkin", zh: "南瓜", g: 120 },
+      { en: "Rice, cooked", zh: "熟米饭", g: 150 },
+      { en: "Olive oil", zh: "橄榄油", g: 5 }
+    ],
+    steps: {
+      en: ["Steam pumpkin until soft.", "Stir-fry beef until cooked.", "Serve beef and pumpkin over rice."],
+      zh: ["南瓜蒸熟。", "牛肉炒熟。", "把牛肉和南瓜放在米饭上。"]
+    }
+  },
+  {
+    id: "pg-seaweed-egg-soup", cat: "pregnancy", time: 8, kcal: 164, p: 12, c: 8, f: 8,
+    title: { en: "Seaweed egg drop soup", zh: "紫菜蛋花汤" },
+    ing: [
+      { en: "Laver", zh: "紫菜", g: 5 },
+      { en: "Egg", zh: "鸡蛋", g: 50 },
+      { en: "Shrimp, dried", zh: "虾皮", g: 5 },
+      { en: "Scallion", zh: "大葱", g: 5 }
+    ],
+    steps: {
+      en: ["Bring water to a simmer with dried shrimp.", "Pour in beaten egg while stirring.", "Add laver and scallion."],
+      zh: ["虾皮加水煮开。", "边搅拌边淋入蛋液。", "加入紫菜和葱花。"]
+    }
+  },
+  {
+    id: "pg-chicken-corn-soup", cat: "pregnancy", time: 20, kcal: 284, p: 24, c: 24, f: 10,
+    title: { en: "Chicken and corn soup", zh: "鸡肉玉米汤" },
+    ing: [
+      { en: "Chicken breast", zh: "鸡胸肉", g: 100 },
+      { en: "Sweet corn", zh: "玉米粒", g: 80 },
+      { en: "Carrot", zh: "胡萝卜", g: 50 },
+      { en: "Egg", zh: "鸡蛋", g: 50 }
+    ],
+    steps: {
+      en: ["Simmer chopped chicken and carrot in water for 10 minutes.", "Add corn and cook 5 more minutes.", "Pour in beaten egg while stirring."],
+      zh: ["鸡丁和胡萝卜丁加水煮 10 分钟。", "加入玉米再煮 5 分钟。", "边搅拌边淋入蛋液。"]
+    }
+  },
+  {
+    id: "pg-black-sesame-oats", cat: "pregnancy", time: 10, kcal: 348, p: 14, c: 44, f: 13,
+    title: { en: "Black sesame walnut oats", zh: "黑芝麻核桃燕麦" },
+    ing: [
+      { en: "Oats", zh: "燕麦片", g: 35 },
+      { en: "Milk", zh: "牛奶", g: 200 },
+      { en: "Walnuts", zh: "核桃", g: 10 },
+      { en: "Black sesame", zh: "黑芝麻", g: 8 }
+    ],
+    steps: {
+      en: ["Cook oats with milk until soft.", "Stir in crushed walnuts and black sesame."],
+      zh: ["燕麦加牛奶煮软。", "拌入核桃碎和黑芝麻。"]
+    }
+  },
+
+  {
+    id: "lt-veg-tofu-soup", cat: "light", time: 12, kcal: 162, p: 13, c: 12, f: 6,
+    title: { en: "Vegetable tofu soup", zh: "蔬菜豆腐汤" },
+    ing: [
+      { en: "Soft tofu", zh: "南豆腐", g: 100 },
+      { en: "Bok choy", zh: "小白菜", g: 100 },
+      { en: "Carrot", zh: "胡萝卜", g: 50 },
+      { en: "Salt", zh: "盐", g: 1 }
+    ],
+    steps: {
+      en: ["Simmer carrot and bok choy in water for 5 minutes.", "Add tofu and cook 3 more minutes, then season."],
+      zh: ["胡萝卜和小白菜加水煮 5 分钟。", "加入豆腐再煮 3 分钟并调味。"]
+    }
+  },
+  {
+    id: "lt-mushroom-bokchoy", cat: "light", time: 10, kcal: 118, p: 5, c: 14, f: 4,
+    title: { en: "Mushroom bok choy", zh: "香菇青菜" },
+    ing: [
+      { en: "Bok choy", zh: "小白菜", g: 180 },
+      { en: "Shiitake mushrooms", zh: "香菇", g: 60 },
+      { en: "Garlic", zh: "大蒜", g: 5 },
+      { en: "Cooking oil", zh: "食用油", g: 4 }
+    ],
+    steps: {
+      en: ["Stir-fry garlic and mushrooms for 3 minutes.", "Add bok choy and cook until wilted.", "Season lightly."],
+      zh: ["蒜末和香菇炒 3 分钟。", "加入小白菜炒软。", "少盐调味。"]
+    }
+  },
+  {
+    id: "lt-steamed-tofu", cat: "light", time: 12, kcal: 148, p: 14, c: 6, f: 7,
+    title: { en: "Steamed tofu with soy sauce", zh: "清蒸豆腐" },
+    ing: [
+      { en: "Soft tofu", zh: "南豆腐", g: 150 },
+      { en: "Scallion", zh: "大葱", g: 10 },
+      { en: "Light soy sauce", zh: "淡盐酱油", g: 5 },
+      { en: "Sesame oil", zh: "芝麻油", g: 2 }
+    ],
+    steps: {
+      en: ["Steam tofu for 8 minutes.", "Top with scallion, soy sauce, and a drop of sesame oil."],
+      zh: ["豆腐蒸 8 分钟。", "淋上葱花、淡盐酱油和少许芝麻油。"]
+    }
+  },
+  {
+    id: "lt-kelp-tofu-salad", cat: "light", time: 10, kcal: 142, p: 11, c: 13, f: 5,
+    title: { en: "Kelp tofu cold dish", zh: "凉拌海带豆腐" },
+    ing: [
+      { en: "Fresh kelp", zh: "海带", g: 80 },
+      { en: "Firm tofu", zh: "北豆腐", g: 80 },
+      { en: "Rice vinegar", zh: "米醋", g: 8 },
+      { en: "Sesame", zh: "芝麻", g: 3 }
+    ],
+    steps: {
+      en: ["Blanch kelp and tofu, then cool.", "Toss with vinegar and sesame."],
+      zh: ["海带和豆腐焯水后放凉。", "加米醋和芝麻拌匀。"]
+    }
+  },
+  {
+    id: "lt-millet-pumpkin", cat: "light", time: 30, kcal: 184, p: 5, c: 38, f: 2,
+    title: { en: "Millet pumpkin porridge", zh: "小米南瓜粥" },
+    ing: [
+      { en: "Millet", zh: "小米", g: 35 },
+      { en: "Pumpkin", zh: "南瓜", g: 120 },
+      { en: "Water", zh: "水", g: 500 }
+    ],
+    steps: {
+      en: ["Cook millet and diced pumpkin in water.", "Simmer until soft and thick."],
+      zh: ["小米和南瓜丁加水熬煮。", "煮至软烂浓稠。"]
+    }
+  },
+  {
+    id: "lt-veg-dumpling-soup", cat: "light", time: 18, kcal: 282, p: 11, c: 44, f: 7,
+    title: { en: "Vegetable dumpling soup", zh: "素饺汤" },
+    ing: [
+      { en: "Vegetable dumplings", zh: "素饺子", g: 120 },
+      { en: "Bok choy", zh: "小白菜", g: 80 },
+      { en: "Shiitake mushrooms", zh: "香菇", g: 40 },
+      { en: "Scallion", zh: "大葱", g: 5 }
+    ],
+    steps: {
+      en: ["Boil dumplings until they float.", "Add vegetables and mushrooms, then simmer 3 minutes."],
+      zh: ["饺子煮至浮起。", "加入蔬菜和香菇再煮 3 分钟。"]
+    }
+  },
+  {
+    id: "lt-garlic-broccoli", cat: "light", time: 10, kcal: 122, p: 6, c: 12, f: 5,
+    title: { en: "Garlic broccoli", zh: "蒜蓉西兰花" },
+    ing: [
+      { en: "Broccoli", zh: "西兰花", g: 180 },
+      { en: "Garlic", zh: "大蒜", g: 8 },
+      { en: "Olive oil", zh: "橄榄油", g: 4 }
+    ],
+    steps: {
+      en: ["Blanch broccoli for 2 minutes.", "Saute garlic in oil, then toss with broccoli."],
+      zh: ["西兰花焯水 2 分钟。", "蒜末用油炒香后和西兰花拌匀。"]
+    }
+  },
+  {
+    id: "lt-tomato-egg-soup", cat: "light", time: 10, kcal: 118, p: 9, c: 9, f: 5,
+    title: { en: "Tomato egg drop soup", zh: "番茄蛋花汤" },
+    ing: [
+      { en: "Tomato", zh: "番茄", g: 150 },
+      { en: "Egg", zh: "鸡蛋", g: 50 },
+      { en: "Scallion", zh: "大葱", g: 5 },
+      { en: "Salt", zh: "盐", g: 1 }
+    ],
+    steps: {
+      en: ["Cook chopped tomato in water until soft.", "Pour in beaten egg while stirring, then add scallion."],
+      zh: ["番茄加水煮软。", "边搅拌边淋入蛋液，撒葱花。"]
+    }
+  },
+  {
+    id: "lt-cucumber-woodear", cat: "light", time: 8, kcal: 92, p: 3, c: 12, f: 3,
+    title: { en: "Cucumber wood ear salad", zh: "黄瓜木耳拌菜" },
+    ing: [
+      { en: "Cucumber", zh: "黄瓜", g: 150 },
+      { en: "Wood ear, soaked", zh: "泡发木耳", g: 50 },
+      { en: "Rice vinegar", zh: "米醋", g: 8 },
+      { en: "Sesame", zh: "芝麻", g: 3 }
+    ],
+    steps: {
+      en: ["Blanch wood ear and cool it.", "Slice cucumber and toss with vinegar and sesame."],
+      zh: ["木耳焯水后放凉。", "黄瓜切片，加米醋和芝麻拌匀。"]
+    }
+  },
+  {
+    id: "lt-oat-fruit-cup", cat: "light", time: 8, kcal: 264, p: 11, c: 44, f: 7,
+    title: { en: "Oat milk fruit cup", zh: "燕麦牛奶水果杯" },
+    ing: [
+      { en: "Oats", zh: "燕麦片", g: 30 },
+      { en: "Milk", zh: "牛奶", g: 180 },
+      { en: "Apple", zh: "苹果", g: 60 },
+      { en: "Blueberries", zh: "蓝莓", g: 30 }
+    ],
+    steps: {
+      en: ["Soak or cook oats in milk.", "Top with chopped apple and blueberries."],
+      zh: ["燕麦用牛奶浸泡或略煮。", "放上苹果丁和蓝莓。"]
+    }
+  }
+];
+
+(function () {
+  "use strict";
+
+  var FOODS = window.FOODS || [];
+  var RECIPES = window.RECIPES || [];
+  var RECIPE_CATEGORIES = window.RECIPE_CATEGORIES || [];
+
+  var LANGS = [
+    "af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en",
+    "es", "et", "eu", "fa", "fi", "fil", "fr", "ga", "gl", "gu", "he", "hi", "hr", "hu", "hy",
+    "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "ky", "lo", "lt", "lv", "mk", "ml",
+    "mn", "mr", "ms", "my", "ne", "nl", "no", "pa", "pl", "pt", "ro", "ru", "si", "sk", "sl",
+    "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"
+  ];
+
+  var DICT = {
+    en: {
+      subtitle: "Offline calorie counter",
+      tabFoods: "Foods", tabDiary: "Diary", tabScan: "Scan", tabRecipes: "Recipes",
+      searchPlaceholder: "Search food", per100g: "per 100 g", noFood: "No matching food",
+      today: "Today", kcal: "kcal", protein: "Protein", carbs: "Carbs", fat: "Fat",
+      loggedFoods: "Logged foods", clearAll: "Clear all", nothingLogged: "Nothing logged yet",
+      nothingLoggedSub: "Add foods from the search list",
+      photoHint: "Take or choose a food photo", takePhoto: "Take photo", readLocalPhoto: "Read local photo",
+      photoNote: "Offline color scan gives approximate matches. Confirm the food before logging.",
+      bestMatches: "Best matches", noPhoto: "No photo analyzed yet",
+      recommendedRecipes: "Recommended recipes",
+      recipeIntro: "Choose a group, then tap a recipe for ingredients, steps, and calories.",
+      perServing: "per serving", noRecipes: "No recipes here yet",
+      weight: "Weight", calculated: "Calculated", addToDiary: "Add to diary",
+      calories: "Calories", ingredients: "Ingredients", cookingSteps: "Cooking steps",
+      language: "Language", searchLanguage: "Search language", foods: "foods", recipes: "recipes",
+      timeMin: "min", oneServing: "1 serving",
+      catAll: "All", catVeg: "Vegetables", catFruit: "Fruits", catStaple: "Staples",
+      catBean: "Beans & Nuts", catMeat: "Meat & Seafood", catDairy: "Dairy & Other",
+      addedDiary: "Added to today's log", diaryCleared: "Diary cleared",
+      chooseImage: "Choose an image file", imageLoadFail: "Could not load the image",
+      analyzing: "Analyzing photo...", photoReady: "Photo ready", analyzeFail: "Could not analyze this photo"
+    },
+    "zh-CN": {
+      subtitle: "离线热量计算器",
+      tabFoods: "食物", tabDiary: "记录", tabScan: "拍照", tabRecipes: "食谱",
+      searchPlaceholder: "搜索食物", per100g: "每 100 克", noFood: "没有匹配的食物",
+      today: "今天", kcal: "千卡", protein: "蛋白质", carbs: "碳水", fat: "脂肪",
+      loggedFoods: "已记录食物", clearAll: "清空全部", nothingLogged: "还没有记录",
+      nothingLoggedSub: "从搜索列表添加食物",
+      photoHint: "拍摄或选择食物照片", takePhoto: "拍照", readLocalPhoto: "读取本地照片",
+      photoNote: "离线色彩识别为近似结果，记录前请确认食物。",
+      bestMatches: "最佳匹配", noPhoto: "尚未分析照片",
+      recommendedRecipes: "推荐食谱",
+      recipeIntro: "选择人群分类，点击食谱查看食材、步骤和热量。",
+      perServing: "每份", noRecipes: "暂无食谱",
+      weight: "重量", calculated: "计算热量", addToDiary: "加入记录",
+      calories: "热量", ingredients: "食材", cookingSteps: "烹饪步骤",
+      language: "语言", searchLanguage: "搜索语言", foods: "种食物", recipes: "道食谱",
+      timeMin: "分钟", oneServing: "1 人份",
+      catAll: "全部", catVeg: "蔬菜", catFruit: "水果", catStaple: "主食",
+      catBean: "豆类坚果", catMeat: "肉类水产", catDairy: "奶类及其他",
+      addedDiary: "已加入今天的记录", diaryCleared: "记录已清空",
+      chooseImage: "请选择图片文件", imageLoadFail: "无法加载图片",
+      analyzing: "正在分析照片...", photoReady: "照片就绪", analyzeFail: "无法分析这张照片"
+    },
+    "zh-TW": {
+      subtitle: "離線熱量計算器",
+      tabFoods: "食物", tabDiary: "記錄", tabScan: "拍照", tabRecipes: "食譜",
+      searchPlaceholder: "搜尋食物", per100g: "每 100 公克", noFood: "沒有符合的食物",
+      today: "今天", kcal: "千卡", protein: "蛋白質", carbs: "碳水", fat: "脂肪",
+      loggedFoods: "已記錄食物", clearAll: "清空全部", nothingLogged: "還沒有記錄",
+      nothingLoggedSub: "從搜尋列表添加食物",
+      photoHint: "拍攝或選擇食物照片", takePhoto: "拍照", readLocalPhoto: "讀取本地照片",
+      photoNote: "離線色彩辨識為近似結果，記錄前請確認食物。",
+      bestMatches: "最佳配對", noPhoto: "尚未分析照片",
+      recommendedRecipes: "推薦食譜",
+      recipeIntro: "選擇人群分類，點擊食譜查看食材、步驟和熱量。",
+      perServing: "每份", noRecipes: "暫無食譜",
+      weight: "重量", calculated: "計算熱量", addToDiary: "加入記錄",
+      calories: "熱量", ingredients: "食材", cookingSteps: "烹飪步驟",
+      language: "語言", searchLanguage: "搜尋語言", foods: "種食物", recipes: "道食譜",
+      timeMin: "分鐘", oneServing: "1 人份",
+      catAll: "全部", catVeg: "蔬菜", catFruit: "水果", catStaple: "主食",
+      catBean: "豆類堅果", catMeat: "肉類水產", catDairy: "奶類及其他",
+      addedDiary: "已加入今天的記錄", diaryCleared: "記錄已清空",
+      chooseImage: "請選擇圖片檔案", imageLoadFail: "無法載入圖片",
+      analyzing: "正在分析照片...", photoReady: "照片就緒", analyzeFail: "無法分析這張照片"
+    }
+  };
+
+  var CATEGORIES = [
+    { key: "all", labelKey: "catAll" },
+    { key: "veg", labelKey: "catVeg" },
+    { key: "fruit", labelKey: "catFruit" },
+    { key: "staple", labelKey: "catStaple" },
+    { key: "bean", labelKey: "catBean" },
+    { key: "meat", labelKey: "catMeat" },
+    { key: "dairy", labelKey: "catDairy" }
+  ];
+
+  var PHOTO_GROUPS = {
+    red: ["tomato", "cherry-tomato", "apple", "strawberry", "watermelon", "red-bean", "salmon", "beef-lean", "steak"],
+    orange: ["carrot", "orange", "mandarin", "mango", "papaya", "pumpkin", "sweet-potato", "cantaloupe", "persimmon"],
+    yellow: ["banana", "lemon", "corn", "potato", "pear", "pineapple", "bell-pepper", "soybean", "cheese"],
+    green: ["broccoli", "spinach", "lettuce", "cucumber", "bok-choy", "green-pepper", "kiwi", "celery", "cabbage", "avocado", "green-pea", "edamame"],
+    white: ["rice-cooked", "firm-tofu", "egg-white", "cauliflower", "white-radish", "milk-whole", "mantou", "onion", "white-bread"],
+    purple: ["eggplant", "grape", "purple-sweet-potato", "blueberry", "black-rice", "black-soybean"],
+    dark: ["beef-lean", "chicken-thigh", "walnut", "almond", "peanut", "whole-wheat-bread", "brown-rice-raw", "shiitake", "laver"],
+    cyan: ["apple", "pear", "grape"],
+    pink: ["shrimp", "salmon", "ham"]
+  };
+
+  var state = {
+    lang: loadSetting("foodcal-lang", "en"),
+    category: "all",
+    query: "",
+    activeFood: null,
+    grams: 100,
+    diary: loadDiary(),
+    recipeCategory: RECIPE_CATEGORIES.length ? RECIPE_CATEGORIES[0].key : "weightloss",
+    photoBusy: false
+  };
+
+  var els = {};
+
+  document.addEventListener("DOMContentLoaded", init);
+  if ("serviceWorker" in navigator && /^https?:$/.test(window.location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("./sw.js").catch(function () {});
+    });
+  }
+
+  function init() {
+    cacheEls();
+    bindEvents();
+    applyLanguage();
+    renderCategories();
+    renderFoods();
+    renderDiary();
+    renderRecipeChips();
+    renderRecipes();
+  }
+
+  function cacheEls() {
+    var map = {
+      foodList: "food-list", categoryChips: "category-chips", resultCount: "result-count",
+      emptyState: "empty-state", searchInput: "search-input", clearSearch: "clear-search",
+      diaryList: "diary-list", diaryEmpty: "diary-empty", diaryTotal: "diary-total",
+      diaryProtein: "diary-protein", diaryCarbs: "diary-carbs", diaryFat: "diary-fat",
+      diaryDate: "diary-date", clearDiary: "clear-diary", photoInput: "photo-input",
+      galleryInput: "gallery-input", photoStage: "photo-stage", photoPreview: "photo-preview",
+      photoHint: "photo-hint", photoResults: "photo-results", photoEmpty: "photo-empty",
+      sheetBackdrop: "sheet-backdrop", foodSheet: "food-sheet", sheetClose: "sheet-close",
+      sheetCategory: "sheet-category", sheetName: "sheet-name", sheetSub: "sheet-sub",
+      sheetKcal: "sheet-kcal", sheetProtein: "sheet-protein", sheetCarbs: "sheet-carbs",
+      sheetFat: "sheet-fat", gramsInput: "grams-input", gramsMinus: "grams-minus",
+      gramsPlus: "grams-plus", quickGrams: "quick-grams", computedKcal: "computed-kcal",
+      addToDiary: "add-to-diary", toast: "toast", languageBtn: "language-btn",
+      languageCode: "language-code", takePhoto: "take-photo", choosePhoto: "choose-photo",
+      recipeChips: "recipe-chips", recipeList: "recipe-list", recipeCount: "recipe-count",
+      recipeEmpty: "recipe-empty", recipeSheet: "recipe-sheet", recipeSheetClose: "recipe-sheet-close",
+      recipeCategory: "recipe-category", recipeName: "recipe-name", recipeMeta: "recipe-meta",
+      recipeKcal: "recipe-kcal", recipeProtein: "recipe-protein", recipeCarbs: "recipe-carbs",
+      recipeFat: "recipe-fat", recipeIngredients: "recipe-ingredients", recipeSteps: "recipe-steps",
+      langBackdrop: "lang-backdrop", langSheet: "lang-sheet", langClose: "lang-close",
+      langSearch: "lang-search", langList: "lang-list"
+    };
+    Object.keys(map).forEach(function (key) {
+      els[key] = document.getElementById(map[key]);
+    });
+    els.tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+    els.views = {
+      foods: document.getElementById("view-foods"),
+      diary: document.getElementById("view-diary"),
+      photo: document.getElementById("view-photo"),
+      recipes: document.getElementById("view-recipes")
+    };
+  }
+
+  function bindEvents() {
+    els.searchInput.addEventListener("input", function () {
+      state.query = els.searchInput.value.trim().toLowerCase();
+      els.clearSearch.hidden = state.query.length === 0;
+      renderFoods();
+    });
+    els.clearSearch.addEventListener("click", function () {
+      els.searchInput.value = "";
+      state.query = "";
+      els.clearSearch.hidden = true;
+      renderFoods();
+      els.searchInput.focus();
+    });
+
+    els.categoryChips.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-category]");
+      if (!btn) return;
+      state.category = btn.getAttribute("data-category");
+      renderCategories();
+      renderFoods();
+    });
+
+    els.tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        showView(tab.getAttribute("data-view"));
+      });
+    });
+
+    els.foodList.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-food]");
+      if (!btn) return;
+      openFoodSheet(btn.getAttribute("data-food"));
+    });
+
+    els.sheetClose.addEventListener("click", closeSheet);
+    els.sheetBackdrop.addEventListener("click", closeSheet);
+    els.gramsInput.addEventListener("input", function () {
+      updateGrams(parseFloat(els.gramsInput.value) || 100);
+      refreshSheetCalc();
+    });
+    els.gramsMinus.addEventListener("click", function () { updateGrams(state.grams - 10); refreshSheetCalc(); });
+    els.gramsPlus.addEventListener("click", function () { updateGrams(state.grams + 10); refreshSheetCalc(); });
+    els.quickGrams.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-grams]");
+      if (!btn) return;
+      updateGrams(parseFloat(btn.getAttribute("data-grams")));
+      refreshSheetCalc();
+    });
+    els.addToDiary.addEventListener("click", function () {
+      addDiaryEntry(state.activeFood.id, clampGrams(state.grams));
+      closeSheet();
+      showView("diary");
+      toast(t("addedDiary"));
+    });
+
+    els.clearDiary.addEventListener("click", function () {
+      if (!state.diary.length) return;
+      state.diary = [];
+      saveDiary();
+      renderDiary();
+      toast(t("diaryCleared"));
+    });
+    els.diaryList.addEventListener("input", function (e) {
+      if (e.target.classList.contains("diary-grams")) updateDiaryGrams(e.target);
+    });
+    els.diaryList.addEventListener("click", function (e) {
+      var btn = e.target.closest(".diary-delete");
+      if (!btn) return;
+      removeDiaryEntry(btn.getAttribute("data-entry"));
+    });
+
+    els.takePhoto.addEventListener("click", function () { els.photoInput.click(); });
+    els.choosePhoto.addEventListener("click", function () { els.galleryInput.click(); });
+    els.photoInput.addEventListener("change", function () {
+      if (els.photoInput.files && els.photoInput.files[0]) analyzePhoto(els.photoInput.files[0]);
+      els.photoInput.value = "";
+    });
+    els.galleryInput.addEventListener("change", function () {
+      if (els.galleryInput.files && els.galleryInput.files[0]) analyzePhoto(els.galleryInput.files[0]);
+      els.galleryInput.value = "";
+    });
+    els.photoResults.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-food]");
+      if (!btn) return;
+      openFoodSheet(btn.getAttribute("data-food"));
+    });
+
+    els.recipeChips.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-recipe-cat]");
+      if (!btn) return;
+      state.recipeCategory = btn.getAttribute("data-recipe-cat");
+      renderRecipeChips();
+      renderRecipes();
+    });
+    els.recipeList.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-recipe]");
+      if (!btn) return;
+      openRecipeSheet(btn.getAttribute("data-recipe"));
+    });
+    els.recipeSheetClose.addEventListener("click", closeRecipeSheet);
+
+    els.languageBtn.addEventListener("click", openLanguageMenu);
+    els.langClose.addEventListener("click", closeLanguageMenu);
+    els.langBackdrop.addEventListener("click", closeLanguageMenu);
+    els.langSearch.addEventListener("input", function () {
+      renderLangList(els.langSearch.value.trim().toLowerCase());
+    });
+    els.langList.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-lang]");
+      if (!btn) return;
+      setLanguage(btn.getAttribute("data-lang"));
+    });
+  }
+
+  function t(key) {
+    var dict = DICT[state.lang] || DICT.en;
+    return dict[key] || DICT.en[key] || key;
+  }
+
+  function langKey() {
+    return state.lang.indexOf("zh") === 0 ? "zh" : "en";
+  }
+
+  function catLabel(key) {
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      if (CATEGORIES[i].key === key) return t(CATEGORIES[i].labelKey);
+    }
+    return key;
+  }
+
+  function setLanguage(lang) {
+    state.lang = lang;
+    saveSetting("foodcal-lang", lang);
+    closeLanguageMenu();
+    applyLanguage();
+  }
+
+  function applyLanguage() {
+    document.documentElement.lang = state.lang;
+    Array.prototype.slice.call(document.querySelectorAll("[data-i18n]")).forEach(function (el) {
+      var val = t(el.getAttribute("data-i18n"));
+      if (val) el.textContent = val;
+    });
+    Array.prototype.slice.call(document.querySelectorAll("[data-i18n-placeholder]")).forEach(function (el) {
+      el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+    });
+    els.languageCode.textContent = state.lang === "zh-CN" ? "中" : (state.lang === "zh-TW" ? "繁" : state.lang.split("-")[0].toUpperCase());
+    if (!state.photoBusy) els.photoHint.textContent = t("photoHint");
+    renderCategories();
+    renderFoods();
+    renderDiary();
+    renderRecipeChips();
+    renderRecipes();
+    if (state.activeFood) {
+      setSheetFoodText(state.activeFood);
+      refreshSheetCalc();
+    }
+    renderLangList(els.langSearch.value.trim().toLowerCase());
+  }
+
+  function openLanguageMenu() {
+    els.langSheet.hidden = false;
+    els.langBackdrop.hidden = false;
+    els.langSearch.value = "";
+    renderLangList("");
+    document.body.style.overflow = "hidden";
+    setTimeout(function () { els.langSearch.focus(); }, 100);
+  }
+
+  function closeLanguageMenu() {
+    els.langSheet.hidden = true;
+    els.langBackdrop.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function langName(code) {
+    try {
+      return new Intl.DisplayNames([code], { type: "language" }).of(code) || code;
+    } catch (e) {
+      return code;
+    }
+  }
+
+  function renderLangList(filter) {
+    var list = LANGS.filter(function (code) {
+      if (!filter) return true;
+      return code.toLowerCase().indexOf(filter) !== -1 || langName(code).toLowerCase().indexOf(filter) !== -1;
+    });
+    els.langList.innerHTML = list.map(function (code) {
+      return '<button class="lang-option' + (code === state.lang ? " is-active" : "") + '" data-lang="' + code + '">' +
+        '<span>' + escapeHTML(langName(code)) + '</span><small>' + code + "</small></button>";
+    }).join("");
+  }
+
+  function showView(name) {
+    els.tabs.forEach(function (tab) {
+      tab.classList.toggle("is-active", tab.getAttribute("data-view") === name);
+    });
+    Object.keys(els.views).forEach(function (key) {
+      els.views[key].classList.toggle("is-active", key === name);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function renderCategories() {
+    els.categoryChips.innerHTML = CATEGORIES.map(function (c) {
+      var count = c.key === "all" ? FOODS.length : FOODS.filter(function (f) { return f.cat === c.key; }).length;
+      return '<button class="chip' + (state.category === c.key ? " is-active" : "") + '" data-category="' + c.key + '">' +
+        catLabel(c.key) + ' <span class="chip-count">' + count + "</span></button>";
+    }).join("");
+  }
+
+  function visibleFoods() {
+    return FOODS.filter(function (f) {
+      var inCategory = state.category === "all" || f.cat === state.category;
+      if (!inCategory) return false;
+      if (!state.query) return true;
+      var hay = (f.en + " " + f.zh + " " + f.cat).toLowerCase();
+      return hay.indexOf(state.query) !== -1;
+    });
+  }
+
+  function renderFoods() {
+    var list = visibleFoods();
+    els.resultCount.textContent = list.length + " " + t("foods");
+    els.emptyState.hidden = list.length !== 0;
+    els.foodList.innerHTML = list.map(foodItemHTML).join("");
+  }
+
+  function foodItemHTML(f) {
+    var primary = langKey() === "zh" ? f.zh : f.en;
+    var secondary = langKey() === "zh" ? f.en : f.zh;
+    return '<button class="food-item" data-food="' + f.id + '">' +
+      '<div class="food-item-main"><strong>' + escapeHTML(primary) + "</strong><span>" + escapeHTML(secondary) +
+      " · " + catLabel(f.cat) + "</span></div>" +
+      '<div class="kcal">' + Math.round(f.kcal) + ' <small>' + t("kcal") + "</small></div>" +
+      "</button>";
+  }
+
+  function findFood(id) {
+    for (var i = 0; i < FOODS.length; i++) {
+      if (FOODS[i].id === id) return FOODS[i];
+    }
+    return null;
+  }
+
+  function openFoodSheet(id) {
+    var f = findFood(id);
+    if (!f) return;
+    state.activeFood = f;
+    state.grams = 100;
+    setSheetFoodText(f);
+    els.gramsInput.value = state.grams;
+    refreshSheetCalc();
+    els.foodSheet.hidden = false;
+    els.sheetBackdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function setSheetFoodText(f) {
+    els.sheetCategory.textContent = catLabel(f.cat);
+    els.sheetName.textContent = langKey() === "zh" ? f.zh : f.en;
+    els.sheetSub.textContent = langKey() === "zh" ? f.en : f.zh;
+    els.sheetKcal.textContent = Math.round(f.kcal);
+    els.sheetProtein.textContent = f.p.toFixed(1) + " g";
+    els.sheetCarbs.textContent = f.c.toFixed(1) + " g";
+    els.sheetFat.textContent = f.f.toFixed(1) + " g";
+  }
+
+  function closeSheet() {
+    els.foodSheet.hidden = true;
+    els.sheetBackdrop.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function refreshSheetCalc() {
+    var f = state.activeFood;
+    if (!f) return;
+    var factor = clampGrams(state.grams) / 100;
+    els.computedKcal.textContent = Math.round(f.kcal * factor) + " " + t("kcal");
+  }
+
+  function updateGrams(value) {
+    state.grams = clampGrams(value);
+    els.gramsInput.value = state.grams;
+  }
+
+  function clampGrams(value) {
+    if (!isFinite(value)) return 100;
+    return Math.max(1, Math.min(2000, Math.round(value)));
+  }
+
+  function addDiaryEntry(id, grams) {
+    var f = findFood(id);
+    if (!f) return;
+    state.diary.unshift({ id: id, grams: grams, ts: Date.now() });
+    saveDiary();
+    renderDiary();
+  }
+
+  function removeDiaryEntry(ts) {
+    state.diary = state.diary.filter(function (entry) { return String(entry.ts) !== ts; });
+    saveDiary();
+    renderDiary();
+  }
+
+  function updateDiaryGrams(input) {
+    var ts = input.getAttribute("data-entry");
+    var entry = state.diary.find(function (item) { return String(item.ts) === ts; });
+    if (!entry) return;
+    entry.grams = clampGrams(parseFloat(input.value) || 100);
+    saveDiary();
+    renderDiary();
+  }
+
+  function diaryTotals() {
+    return state.diary.reduce(function (acc, entry) {
+      var f = findFood(entry.id);
+      if (!f) return acc;
+      var factor = entry.grams / 100;
+      acc.kcal += f.kcal * factor;
+      acc.p += f.p * factor;
+      acc.c += f.c * factor;
+      acc.f += f.f * factor;
+      return acc;
+    }, { kcal: 0, p: 0, c: 0, f: 0 });
+  }
+
+  function renderDiary() {
+    var totals = diaryTotals();
+    els.diaryDate.textContent = new Date().toLocaleDateString(state.lang, {
+      weekday: "long", month: "long", day: "numeric"
+    });
+    els.diaryTotal.textContent = Math.round(totals.kcal);
+    els.diaryProtein.textContent = totals.p.toFixed(1) + " g";
+    els.diaryCarbs.textContent = totals.c.toFixed(1) + " g";
+    els.diaryFat.textContent = totals.f.toFixed(1) + " g";
+    els.diaryEmpty.hidden = state.diary.length !== 0;
+    els.diaryList.innerHTML = state.diary.map(function (entry) {
+      var f = findFood(entry.id);
+      if (!f) return "";
+      var factor = entry.grams / 100;
+      var primary = langKey() === "zh" ? f.zh : f.en;
+      var secondary = langKey() === "zh" ? f.en : f.zh;
+      return '<div class="diary-item">' +
+        '<div class="diary-item-info"><strong>' + escapeHTML(primary) + "</strong><span>" + escapeHTML(secondary) +
+        "</span></div>" +
+        '<input class="grams diary-grams" data-entry="' + entry.ts + '" type="number" inputmode="decimal" value="' +
+        entry.grams + '" aria-label="Weight in grams">' +
+        '<div class="kcal">' + Math.round(f.kcal * factor) + " " + t("kcal") + "</div>" +
+        '<button class="diary-delete" data-entry="' + entry.ts + '" aria-label="Remove food">' +
+        '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>' +
+        "</button></div>";
+    }).join("");
+  }
+
+  function renderRecipeChips() {
+    els.recipeChips.innerHTML = RECIPE_CATEGORIES.map(function (c) {
+      var count = RECIPES.filter(function (r) { return r.cat === c.key; }).length;
+      var label = langKey() === "zh" ? c.zh : c.en;
+      return '<button class="chip' + (state.recipeCategory === c.key ? " is-active" : "") + '" data-recipe-cat="' + c.key + '">' +
+        label + ' <span class="chip-count">' + count + "</span></button>";
+    }).join("");
+  }
+
+  function visibleRecipes() {
+    return RECIPES.filter(function (r) { return r.cat === state.recipeCategory; });
+  }
+
+  function renderRecipes() {
+    var list = visibleRecipes();
+    els.recipeCount.textContent = list.length + " " + t("recipes");
+    els.recipeEmpty.hidden = list.length !== 0;
+    els.recipeList.innerHTML = list.map(recipeItemHTML).join("");
+  }
+
+  function recipeItemHTML(r) {
+    var title = langKey() === "zh" ? r.title.zh : r.title.en;
+    var sub = r.time + " " + t("timeMin") + " · " + t("oneServing");
+    return '<button class="recipe-item" data-recipe="' + r.id + '">' +
+      '<div class="recipe-item-main"><strong>' + escapeHTML(title) + "</strong><span>" + escapeHTML(sub) + "</span></div>" +
+      '<div class="kcal">' + Math.round(r.kcal) + ' <small>' + t("kcal") + "</small></div>" +
+      "</button>";
+  }
+
+  function findRecipe(id) {
+    for (var i = 0; i < RECIPES.length; i++) {
+      if (RECIPES[i].id === id) return RECIPES[i];
+    }
+    return null;
+  }
+
+  function openRecipeSheet(id) {
+    var r = findRecipe(id);
+    if (!r) return;
+    var cat = RECIPE_CATEGORIES.find(function (c) { return c.key === r.cat; });
+    els.recipeCategory.textContent = cat ? (langKey() === "zh" ? cat.zh : cat.en) : r.cat;
+    els.recipeName.textContent = langKey() === "zh" ? r.title.zh : r.title.en;
+    els.recipeMeta.innerHTML =
+      '<span>' + r.time + " " + t("timeMin") + "</span><span>" + t("oneServing") + "</span>";
+    els.recipeKcal.textContent = Math.round(r.kcal) + " " + t("kcal");
+    els.recipeProtein.textContent = r.p.toFixed(0) + " g";
+    els.recipeCarbs.textContent = r.c.toFixed(0) + " g";
+    els.recipeFat.textContent = r.f.toFixed(0) + " g";
+    els.recipeIngredients.innerHTML = r.ing.map(function (ing) {
+      return '<li><span>' + escapeHTML(langKey() === "zh" ? ing.zh : ing.en) + '</span><span class="amount">' + ing.g + " g</span></li>";
+    }).join("");
+    els.recipeSteps.innerHTML = (langKey() === "zh" ? r.steps.zh : r.steps.en).map(function (step, i) {
+      return "<li>" + escapeHTML(step) + "</li>";
+    }).join("");
+    els.recipeSheet.hidden = false;
+    els.sheetBackdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeRecipeSheet() {
+    els.recipeSheet.hidden = true;
+    els.sheetBackdrop.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function analyzePhoto(file) {
+    if (!file.type || file.type.indexOf("image/") !== 0) {
+      toast(t("chooseImage"));
+      return;
+    }
+    state.photoBusy = true;
+    els.photoHint.textContent = t("analyzing");
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        els.photoPreview.src = img.src;
+        els.photoPreview.hidden = false;
+        try {
+          var matches = scanImage(img);
+          renderPhotoResults(matches);
+          els.photoHint.textContent = t("photoReady");
+        } catch (err) {
+          els.photoHint.textContent = t("analyzeFail");
+          els.photoResults.innerHTML = "";
+        }
+        state.photoBusy = false;
+      };
+      img.onerror = function () {
+        toast(t("imageLoadFail"));
+        els.photoHint.textContent = t("photoHint");
+        state.photoBusy = false;
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function scanImage(img) {
+    var size = 96;
+    var canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, size, size);
+    var data = ctx.getImageData(0, 0, size, size).data;
+    var sumR = 0, sumG = 0, sumB = 0, n = 0, satSum = 0;
+    for (var i = 0; i < data.length; i += 4) {
+      sumR += data[i];
+      sumG += data[i + 1];
+      sumB += data[i + 2];
+      var mx = Math.max(data[i], data[i + 1], data[i + 2]);
+      var mn = Math.min(data[i], data[i + 1], data[i + 2]);
+      satSum += mx === 0 ? 0 : (mx - mn) / mx;
+      n++;
+    }
+    var r = sumR / n, g = sumG / n, b = sumB / n;
+    var sat = satSum / n;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var lightness = (max + min) / 510;
+    var groups = colorGroups(r, g, b, sat, lightness);
+    return rankMatches(groups, sat);
+  }
+
+  function colorGroups(r, g, b, sat, light) {
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var hue = 0;
+    if (max !== min) {
+      if (max === r) hue = 60 * (((g - b) / (max - min)) % 6);
+      else if (max === g) hue = 60 * ((b - r) / (max - min) + 2);
+      else hue = 60 * ((r - g) / (max - min) + 4);
+    }
+    if (hue < 0) hue += 360;
+    var groups = [];
+    if (light < 0.28 && sat < 0.45) groups.push("dark");
+    else if (light > 0.82 && sat < 0.18) groups.push("white");
+    else if (hue < 20 || hue >= 335) groups.push("red");
+    else if (hue < 45) groups.push("orange");
+    else if (hue < 72) groups.push("yellow");
+    else if (hue < 165) groups.push("green");
+    else if (hue < 255) groups.push("cyan");
+    else if (hue < 295) groups.push("purple");
+    else groups.push("pink");
+    return groups;
+  }
+
+  function rankMatches(groups, sat) {
+    var seen = {};
+    var out = [];
+    var confidence = Math.min(0.98, 0.62 + sat * 0.35);
+    groups.forEach(function (group) {
+      (PHOTO_GROUPS[group] || []).forEach(function (id) {
+        if (seen[id]) return;
+        seen[id] = true;
+        var f = findFood(id);
+        if (f) out.push({ food: f, score: confidence - out.length * 0.045 });
+      });
+    });
+    out.sort(function (a, b) { return b.score - a.score; });
+    return out.slice(0, 8);
+  }
+
+  function renderPhotoResults(matches) {
+    els.photoEmpty.hidden = matches.length !== 0;
+    els.photoResults.innerHTML = matches.map(function (m) {
+      var pct = Math.max(28, Math.min(96, Math.round(m.score * 100)));
+      var primary = langKey() === "zh" ? m.food.zh : m.food.en;
+      var secondary = langKey() === "zh" ? m.food.en : m.food.zh;
+      return '<button class="food-item" data-food="' + m.food.id + '">' +
+        '<div class="food-item-main"><strong>' + escapeHTML(primary) + "</strong><span>" +
+        escapeHTML(secondary) + " · " + pct + "%</span></div>" +
+        '<div class="kcal">' + Math.round(m.food.kcal) + ' <small>' + t("kcal") + "</small></div>" +
+        "</button>";
+    }).join("");
+  }
+
+  function loadSetting(key, fallback) {
+    try {
+      return localStorage.getItem(key) || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function saveSetting(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      // Ignore storage failures in private browsing.
+    }
+  }
+
+  function loadDiary() {
+    try {
+      var raw = localStorage.getItem("foodcal-diary-v1");
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveDiary() {
+    try {
+      localStorage.setItem("foodcal-diary-v1", JSON.stringify(state.diary));
+    } catch (e) {
+      // Storage can be unavailable in private browsing; the app still works in memory.
+    }
+  }
+
+  function toast(message) {
+    els.toast.textContent = message;
+    els.toast.hidden = false;
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () { els.toast.hidden = true; }, 1800);
+  }
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+  }
+})();
+
+  </script>
+</body>
+</html>
